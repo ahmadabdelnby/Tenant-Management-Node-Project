@@ -12,6 +12,13 @@ const { authenticate, isAdmin, isAuthenticated, validate, auditLog } = require('
 router.get('/', authenticate, isAuthenticated, tenancyController.getAll);
 
 /**
+ * @route   GET /api/tenancies/my-tenancies
+ * @desc    Get current tenant's tenancies
+ * @access  Tenant only
+ */
+router.get('/my-tenancies', authenticate, isAuthenticated, tenancyController.getMyTenancies);
+
+/**
  * @route   POST /api/tenancies
  * @desc    Create new tenancy
  * @access  Admin only

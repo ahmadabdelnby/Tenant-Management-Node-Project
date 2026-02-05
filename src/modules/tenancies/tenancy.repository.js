@@ -56,7 +56,7 @@ const tenancyRepository = {
     
     if (filters.isActive !== undefined) {
       query += ' AND t.is_active = ?';
-      params.push(filters.isActive);
+      params.push(filters.isActive ? 1 : 0);
     }
     
     if (filters.buildingId) {
@@ -65,8 +65,7 @@ const tenancyRepository = {
     }
     
     // Add ordering and pagination
-    query += ' ORDER BY t.created_at DESC LIMIT ? OFFSET ?';
-    params.push(limit, offset);
+    query += ` ORDER BY t.created_at DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`;
     
     const [rows] = await pool.execute(query, params);
     return rows;

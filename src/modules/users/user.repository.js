@@ -44,7 +44,7 @@ const userRepository = {
     
     if (filters.isActive !== undefined) {
       query += ' AND is_active = ?';
-      params.push(filters.isActive);
+      params.push(filters.isActive ? 1 : 0);
     }
     
     if (filters.search) {
@@ -54,8 +54,7 @@ const userRepository = {
     }
     
     // Add ordering and pagination
-    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-    params.push(limit, offset);
+    query += ` ORDER BY created_at DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`;
     
     const [rows] = await pool.execute(query, params);
     return rows;
@@ -75,7 +74,7 @@ const userRepository = {
     
     if (filters.isActive !== undefined) {
       query += ' AND is_active = ?';
-      params.push(filters.isActive);
+      params.push(filters.isActive ? 1 : 0);
     }
     
     if (filters.search) {

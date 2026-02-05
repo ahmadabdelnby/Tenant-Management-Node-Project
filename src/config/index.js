@@ -23,8 +23,8 @@ module.exports = {
   // Rate Limiting
   rateLimit: {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 900000, // 15 minutes
-    maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS, 10) || 100,
-    loginMax: parseInt(process.env.LOGIN_RATE_LIMIT_MAX, 10) || 5,
+    maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS, 10) || 1000,
+    loginMax: parseInt(process.env.LOGIN_RATE_LIMIT_MAX, 10) || 50,
   },
 
   // CORS
