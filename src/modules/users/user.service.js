@@ -68,28 +68,38 @@ const userService = {
       throw new AppError(ERROR_MESSAGES.USER_ALREADY_EXISTS, HTTP_STATUS.CONFLICT);
     }
     
-    // Generate random password
-    const randomPassword = generateRandomPassword(12);
-    const passwordHash = await bcrypt.hash(randomPassword, 12);
+    // Use provided password or generate random one
+    const password = userData.password || generateRandomPassword(12);
+    const passwordHash = await bcrypt.hash(password, 12);
     
     // Create user
     const userId = await userRepository.create({
-      ...userData,
+      email: userData.email,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      role: userData.role,
       passwordHash,
     });
     
     logger.info(`User created: ${userData.email} with ID: ${userId}`);
     
-    // Return user with generated password (to be sent to user)
-    return {
+    // Return user with password info
+    const response = {
       id: userId,
       email: userData.email,
       firstName: userData.firstName,
       lastName: userData.lastName,
       role: userData.role,
-      temporaryPassword: randomPassword, // This should be sent to user securely
-      message: 'User created successfully. Please share the temporary password securely.',
+      message: 'User created successfully.',
     };
+    
+    // Only include temporary password if it was auto-generated
+    if (!userData.password) {
+      response.temporaryPassword = password;
+      response.message = 'User created successfully. Please share the temporary password securely.';
+    }
+    
+    return response;
   },
   
   /**

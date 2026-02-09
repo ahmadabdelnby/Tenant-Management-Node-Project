@@ -2,14 +2,14 @@ const express = require('express');
 const router = express.Router();
 const authController = require('./auth.controller');
 const { loginSchema } = require('./auth.validation');
-const { authenticate, validate, loginLimiter } = require('../../middleware');
+const { authenticate, validate } = require('../../middleware');
 
 /**
  * @route   POST /api/auth/login
  * @desc    Login user
  * @access  Public
  */
-router.post('/login', loginLimiter, validate(loginSchema), authController.login);
+router.post('/login', validate(loginSchema), authController.login);
 
 /**
  * @route   POST /api/auth/logout

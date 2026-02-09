@@ -6,7 +6,7 @@ const config = require('./config');
 const swaggerSpec = require('./config/swagger');
 
 // Import middleware
-const { apiLimiter, errorHandler, notFoundHandler } = require('./middleware');
+const { errorHandler, notFoundHandler } = require('./middleware');
 
 // Import routes
 const { authRoutes } = require('./modules/auth');
@@ -45,10 +45,10 @@ app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // ============================================
-// RATE LIMITING
+// RATE LIMITING (DISABLED)
 // ============================================
 
-app.use('/api', apiLimiter);
+// app.use('/api', apiLimiter);
 
 // ============================================
 // SWAGGER DOCUMENTATION
