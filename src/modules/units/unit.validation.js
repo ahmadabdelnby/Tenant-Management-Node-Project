@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { UNIT_STATUS_ARRAY } = require('../../shared/constants');
+const { UNIT_STATUS_ARRAY, UNIT_TYPE_ARRAY } = require('../../shared/constants');
 
 /**
  * Create unit validation schema
@@ -57,7 +57,7 @@ const createUnitSchema = Joi.object({
       'number.max': 'Bathrooms cannot exceed 20',
       'any.required': 'Number of bathrooms is required',
     }),
-  areaSqft: Joi.number()
+  area: Joi.number()
     .positive()
     .max(100000)
     .optional()
@@ -74,12 +74,27 @@ const createUnitSchema = Joi.object({
       'number.positive': 'Rent amount must be a positive number',
       'any.required': 'Rent amount is required',
     }),
+  type: Joi.string()
+    .valid(...UNIT_TYPE_ARRAY)
+    .required()
+    .messages({
+      'any.only': `Type must be one of: ${UNIT_TYPE_ARRAY.join(', ')}`,
+      'any.required': 'Unit type is required',
+    }),
 });
 
 /**
  * Update unit validation schema
  */
 const updateUnitSchema = Joi.object({
+  buildingId: Joi.number()
+    .integer()
+    .positive()
+    .messages({
+      'number.base': 'Building ID must be a number',
+      'number.integer': 'Building ID must be an integer',
+      'number.positive': 'Building ID must be a positive number',
+    }),
   unitNumber: Joi.string()
     .min(1)
     .max(20)
@@ -115,7 +130,7 @@ const updateUnitSchema = Joi.object({
       'number.min': 'Bathrooms cannot be negative',
       'number.max': 'Bathrooms cannot exceed 20',
     }),
-  areaSqft: Joi.number()
+  area: Joi.number()
     .positive()
     .max(100000)
     .messages({
@@ -133,6 +148,11 @@ const updateUnitSchema = Joi.object({
     .valid(...UNIT_STATUS_ARRAY)
     .messages({
       'any.only': `Status must be one of: ${UNIT_STATUS_ARRAY.join(', ')}`,
+    }),
+  type: Joi.string()
+    .valid(...UNIT_TYPE_ARRAY)
+    .messages({
+      'any.only': `Type must be one of: ${UNIT_TYPE_ARRAY.join(', ')}`,
     }),
 }).min(1).messages({
   'object.min': 'At least one field must be provided for update',

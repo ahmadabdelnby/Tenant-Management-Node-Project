@@ -9,7 +9,7 @@ const userRepository = {
    */
   async findById(id) {
     const [rows] = await pool.execute(
-      `SELECT id, email, first_name, last_name, role, is_active, created_at, updated_at 
+      `SELECT id, email, first_name, last_name, phone, role, is_active, created_at, updated_at 
        FROM users WHERE id = ? AND deleted_at IS NULL`,
       [id]
     );
@@ -21,7 +21,7 @@ const userRepository = {
    */
   async findByEmail(email) {
     const [rows] = await pool.execute(
-      `SELECT id, email, first_name, last_name, role, is_active, created_at, updated_at 
+      `SELECT id, email, first_name, last_name, phone, role, is_active, created_at, updated_at 
        FROM users WHERE email = ? AND deleted_at IS NULL`,
       [email.toLowerCase()]
     );
@@ -32,7 +32,7 @@ const userRepository = {
    * Find all users with pagination
    */
   async findAll(limit, offset, filters = {}) {
-    let query = `SELECT id, email, first_name, last_name, role, is_active, created_at, updated_at 
+    let query = `SELECT id, email, first_name, last_name, phone, role, is_active, created_at, updated_at 
                  FROM users WHERE deleted_at IS NULL`;
     const params = [];
     
@@ -91,12 +91,12 @@ const userRepository = {
    * Create new user
    */
   async create(userData) {
-    const { email, passwordHash, firstName, lastName, role } = userData;
+    const { email, passwordHash, firstName, lastName, role, phone } = userData;
     
     const [result] = await pool.execute(
-      `INSERT INTO users (email, password_hash, first_name, last_name, role, is_active, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, true, NOW(), NOW())`,
-      [email.toLowerCase(), passwordHash, firstName, lastName, role]
+      `INSERT INTO users (email, password_hash, first_name, last_name, phone, role, is_active, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, true, NOW(), NOW())`,
+      [email.toLowerCase(), passwordHash, firstName, lastName, phone || null, role]
     );
     
     return result.insertId;
@@ -120,6 +120,10 @@ const userRepository = {
     if (userData.lastName) {
       fields.push('last_name = ?');
       params.push(userData.lastName);
+    }
+    if (userData.phone !== undefined) {
+      fields.push('phone = ?');
+      params.push(userData.phone || null);
     }
     if (userData.role) {
       fields.push('role = ?');

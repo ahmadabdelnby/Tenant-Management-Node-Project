@@ -104,12 +104,12 @@ const unitRepository = {
    * Create new unit
    */
   async create(unitData) {
-    const { buildingId, unitNumber, floor, bedrooms, bathrooms, areaSqft, rentAmount } = unitData;
+    const { buildingId, unitNumber, floor, bedrooms, bathrooms, area, rentAmount, type } = unitData;
     
     const [result] = await pool.execute(
-      `INSERT INTO units (building_id, unit_number, floor, bedrooms, bathrooms, area_sqft, rent_amount, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-      [buildingId, unitNumber, floor || null, bedrooms, bathrooms, areaSqft || null, rentAmount, UNIT_STATUS.AVAILABLE]
+      `INSERT INTO units (building_id, unit_number, floor, bedrooms, bathrooms, area_sqft, rent_amount, type, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [buildingId, unitNumber, floor || null, bedrooms, bathrooms, area || null, rentAmount, type || 'APARTMENT', UNIT_STATUS.AVAILABLE]
     );
     
     return result.insertId;
@@ -122,6 +122,10 @@ const unitRepository = {
     const fields = [];
     const params = [];
     
+    if (unitData.buildingId) {
+      fields.push('building_id = ?');
+      params.push(unitData.buildingId);
+    }
     if (unitData.unitNumber) {
       fields.push('unit_number = ?');
       params.push(unitData.unitNumber);
@@ -138,9 +142,9 @@ const unitRepository = {
       fields.push('bathrooms = ?');
       params.push(unitData.bathrooms);
     }
-    if (unitData.areaSqft !== undefined) {
+    if (unitData.area !== undefined) {
       fields.push('area_sqft = ?');
-      params.push(unitData.areaSqft);
+      params.push(unitData.area);
     }
     if (unitData.rentAmount !== undefined) {
       fields.push('rent_amount = ?');
@@ -149,6 +153,10 @@ const unitRepository = {
     if (unitData.status) {
       fields.push('status = ?');
       params.push(unitData.status);
+    }
+    if (unitData.type) {
+      fields.push('type = ?');
+      params.push(unitData.type);
     }
     
     fields.push('updated_at = NOW()');

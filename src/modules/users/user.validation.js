@@ -45,6 +45,13 @@ const createUserSchema = Joi.object({
       'any.only': `Role must be one of: ${ROLES_ARRAY.join(', ')}`,
       'any.required': 'Role is required',
     }),
+  phone: Joi.string()
+    .max(20)
+    .allow('', null)
+    .optional()
+    .messages({
+      'string.max': 'Phone number cannot exceed 20 characters',
+    }),
 });
 
 /**
@@ -75,6 +82,13 @@ const updateUserSchema = Joi.object({
     .messages({
       'any.only': `Role must be one of: ${ROLES_ARRAY.join(', ')}`,
     }),
+  phone: Joi.string()
+    .max(20)
+    .allow('', null)
+    .optional()
+    .messages({
+      'string.max': 'Phone number cannot exceed 20 characters',
+    }),
   isActive: Joi.boolean(),
 }).min(1).messages({
   'object.min': 'At least one field must be provided for update',
@@ -98,6 +112,13 @@ const updateProfileSchema = Joi.object({
       'string.min': 'Last name must be at least 2 characters',
       'string.max': 'Last name cannot exceed 50 characters',
     }),
+  phone: Joi.string()
+    .max(20)
+    .allow('', null)
+    .optional()
+    .messages({
+      'string.max': 'Phone number cannot exceed 20 characters',
+    }),
 }).min(1).messages({
   'object.min': 'At least one field must be provided for update',
 });
@@ -118,9 +139,30 @@ const userIdParamSchema = Joi.object({
     }),
 });
 
+/**
+ * Change password validation schema
+ */
+const changePasswordSchema = Joi.object({
+  currentPassword: Joi.string()
+    .required()
+    .messages({
+      'any.required': 'Current password is required',
+    }),
+  newPassword: Joi.string()
+    .min(6)
+    .max(100)
+    .required()
+    .messages({
+      'string.min': 'New password must be at least 6 characters',
+      'string.max': 'New password cannot exceed 100 characters',
+      'any.required': 'New password is required',
+    }),
+});
+
 module.exports = {
   createUserSchema,
   updateUserSchema,
   updateProfileSchema,
+  changePasswordSchema,
   userIdParamSchema,
 };

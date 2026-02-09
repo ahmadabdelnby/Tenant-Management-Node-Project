@@ -27,6 +27,7 @@ const userService = {
       email: user.email,
       firstName: user.first_name,
       lastName: user.last_name,
+      phone: user.phone,
       role: user.role,
       isActive: user.is_active === 1,
       createdAt: user.created_at,
@@ -51,6 +52,7 @@ const userService = {
       email: user.email,
       firstName: user.first_name,
       lastName: user.last_name,
+      phone: user.phone,
       role: user.role,
       isActive: user.is_active === 1,
       createdAt: user.created_at,
@@ -77,6 +79,7 @@ const userService = {
       email: userData.email,
       firstName: userData.firstName,
       lastName: userData.lastName,
+      phone: userData.phone,
       role: userData.role,
       passwordHash,
     });
@@ -201,6 +204,40 @@ const userService = {
     logger.info(`User deleted: ID ${id}`);
     
     return { message: 'User deleted successfully' };
+  },
+  
+  /**
+   * Change user password
+   */
+  async changePassword(userId, { currentPassword, newPassword }) {
+    // Get user with password hash
+    const [users] = await require('../../config/database').pool.execute(
+      'SELECT id, password_hash FROM users WHERE id = ? AND deleted_at IS NULL',
+      [userId]
+    );
+    
+    if (users.length === 0) {
+      throw new NotFoundError(ERROR_MESSAGES.USER_NOT_FOUND);
+    }
+    
+    const user = users[0];
+    
+    // Verify current password
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password_hash);
+    
+    if (!isPasswordValid) {
+      throw new AppError('Current password is incorrect', HTTP_STATUS.BAD_REQUEST);
+    }
+    
+    // Hash new password
+    const newPasswordHash = await bcrypt.hash(newPassword, 12);
+    
+    // Update password
+    await userRepository.update(userId, { passwordHash: newPasswordHash });
+    
+    logger.info(`Password changed for user: ID ${userId}`);
+    
+    return { message: 'Password changed successfully' };
   },
 };
 

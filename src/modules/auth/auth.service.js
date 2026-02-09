@@ -20,7 +20,7 @@ const authService = {
   async login(email, password) {
     // Find user by email
     const [users] = await pool.execute(
-      'SELECT id, email, password_hash, first_name, last_name, role, is_active FROM users WHERE email = ? AND deleted_at IS NULL',
+      'SELECT id, email, password_hash, first_name, last_name, phone, role, is_active FROM users WHERE email = ? AND deleted_at IS NULL',
       [email.toLowerCase()]
     );
     
@@ -64,6 +64,7 @@ const authService = {
         email: user.email,
         firstName: user.first_name,
         lastName: user.last_name,
+        phone: user.phone,
         role: user.role,
       },
       token,
@@ -97,7 +98,7 @@ const authService = {
    */
   async getCurrentUser(userId) {
     const [users] = await pool.execute(
-      'SELECT id, email, first_name, last_name, role, is_active, created_at, updated_at FROM users WHERE id = ? AND deleted_at IS NULL',
+      'SELECT id, email, first_name, last_name, phone, role, is_active, created_at, updated_at FROM users WHERE id = ? AND deleted_at IS NULL',
       [userId]
     );
     
@@ -112,6 +113,7 @@ const authService = {
       email: user.email,
       firstName: user.first_name,
       lastName: user.last_name,
+      phone: user.phone,
       role: user.role,
       isActive: user.is_active,
       createdAt: user.created_at,

@@ -131,6 +131,22 @@ const userController = {
   },
   
   /**
+   * Change password
+   * PUT /api/profile/change-password
+   */
+  async changePassword(req, res, next) {
+    try {
+      await userService.changePassword(req.user.id, req.body);
+      
+      res.status(HTTP_STATUS.OK).json(
+        successResponse(null, 'Password changed successfully')
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+  
+  /**
    * Delete user (soft delete)
    * DELETE /api/users/:id
    */

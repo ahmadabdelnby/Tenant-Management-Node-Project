@@ -20,8 +20,11 @@ const unitService = {
       bedrooms: unit.bedrooms,
       bathrooms: unit.bathrooms,
       areaSqft: unit.area_sqft,
+      area: parseFloat(unit.area_sqft),
+      type: unit.type,
       rentAmount: parseFloat(unit.rent_amount),
       status: unit.status,
+      buildingId: unit.building_id,
       building: {
         id: unit.building_id,
         name: unit.building_name,
