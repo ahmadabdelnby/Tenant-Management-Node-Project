@@ -257,6 +257,63 @@ const maintenanceRepository = {
     );
     return rows.length > 0;
   },
+
+  /**
+   * Find all maintenance requests for export (no pagination)
+   */
+  async findAllForExport(filters = {}) {
+    let query = `SELECT mr.*,
+                        u.unit_number, u.building_id,
+                        b.name as building_name, b.owner_id,
+                        tenant.email as tenant_email, tenant.first_name as tenant_first_name,
+                        tenant.last_name as tenant_last_name, tenant.phone as tenant_phone,
+                        resolver.first_name as resolver_first_name, resolver.last_name as resolver_last_name
+                 FROM maintenance_requests mr
+                 LEFT JOIN units u ON mr.unit_id = u.id
+                 LEFT JOIN buildings b ON u.building_id = b.id
+                 LEFT JOIN users tenant ON mr.tenant_id = tenant.id
+                 LEFT JOIN users resolver ON mr.resolved_by = resolver.id
+                 WHERE 1=1`;
+    const params = [];
+
+    if (filters.buildingId) {
+      query += ' AND u.building_id = ?';
+      params.push(filters.buildingId);
+    }
+    if (filters.ownerId) {
+      query += ' AND b.owner_id = ?';
+      params.push(filters.ownerId);
+    }
+    if (filters.tenantId) {
+      query += ' AND mr.tenant_id = ?';
+      params.push(filters.tenantId);
+    }
+    if (filters.status) {
+      query += ' AND mr.status = ?';
+      params.push(filters.status);
+    }
+    if (filters.priority) {
+      query += ' AND mr.priority = ?';
+      params.push(filters.priority);
+    }
+    if (filters.category) {
+      query += ' AND mr.category = ?';
+      params.push(filters.category);
+    }
+    if (filters.dateFrom) {
+      query += ' AND mr.created_at >= ?';
+      params.push(filters.dateFrom);
+    }
+    if (filters.dateTo) {
+      query += ' AND mr.created_at <= ?';
+      params.push(filters.dateTo);
+    }
+
+    query += ' ORDER BY b.name ASC, u.unit_number ASC, mr.created_at DESC';
+
+    const [rows] = await pool.execute(query, params);
+    return rows;
+  },
 };
 
 module.exports = maintenanceRepository;

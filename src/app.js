@@ -15,6 +15,8 @@ const { buildingRoutes } = require('./modules/buildings');
 const { unitRoutes, unitController } = require('./modules/units');
 const { tenancyRoutes, myTenanciesRoutes } = require('./modules/tenancies');
 const { maintenanceRoutes } = require('./modules/maintenance');
+const { paymentRoutes } = require('./modules/payments');
+const { notificationRoutes } = require('./modules/notifications');
 
 // Import middleware for nested routes
 const { authenticate, isAdminOrOwner } = require('./middleware');
@@ -109,6 +111,12 @@ app.use('/api/my-tenancies', myTenanciesRoutes);
 
 // Maintenance routes
 app.use('/api/maintenance', maintenanceRoutes);
+
+// Payment routes
+app.use('/api/payments', paymentRoutes);
+
+// Notification routes
+app.use('/api/notifications', notificationRoutes);
 
 // ============================================
 // ERROR HANDLING

@@ -3,6 +3,7 @@ const { AppError, NotFoundError, AuthorizationError } = require('../../shared/er
 const { HTTP_STATUS, ERROR_MESSAGES, ROLES } = require('../../shared/constants');
 const { buildPaginationResponse } = require('../../shared/utils/paginationHelper');
 const logger = require('../../shared/utils/logger');
+const ExcelJS = require('exceljs');
 
 /**
  * Maintenance Service - Business logic
@@ -177,6 +178,169 @@ const maintenanceService = {
     await maintenanceRepository.delete(id);
     
     logger.info(`Maintenance request deleted: ID ${id}`);
+  },
+
+  /**
+   * Export maintenance requests to Excel
+   */
+  async exportToExcel(filters, user) {
+    // Apply role-based filters
+    if (user.role === ROLES.OWNER) {
+      filters.ownerId = user.id;
+    } else if (user.role === ROLES.TENANT) {
+      filters.tenantId = user.id;
+    }
+
+    const requests = await maintenanceRepository.findAllForExport(filters);
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'PropertyMS';
+    workbook.created = new Date();
+
+    // ===== Main Report Sheet =====
+    const sheet = workbook.addWorksheet('Maintenance Report', {
+      headerFooter: { firstHeader: 'Maintenance Report' },
+    });
+
+    sheet.columns = [
+      { header: 'ID', key: 'id', width: 8 },
+      { header: 'Building', key: 'building', width: 20 },
+      { header: 'Unit', key: 'unit', width: 12 },
+      { header: 'Tenant Name', key: 'tenantName', width: 25 },
+      { header: 'Phone', key: 'phone', width: 15 },
+      { header: 'Title', key: 'title', width: 30 },
+      { header: 'Category', key: 'category', width: 14 },
+      { header: 'Priority', key: 'priority', width: 12 },
+      { header: 'Status', key: 'status', width: 14 },
+      { header: 'Description', key: 'description', width: 40 },
+      { header: 'Resolution Notes', key: 'resolutionNotes', width: 35 },
+      { header: 'Resolved By', key: 'resolvedBy', width: 20 },
+      { header: 'Created At', key: 'createdAt', width: 20 },
+      { header: 'Resolved At', key: 'resolvedAt', width: 20 },
+    ];
+
+    // Style header row
+    const headerRow = sheet.getRow(1);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.fill = {
+      type: 'pattern', pattern: 'solid',
+      fgColor: { argb: 'FF1A365D' },
+    };
+    headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+    headerRow.height = 25;
+
+    // Add data rows
+    const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+
+    requests.forEach(r => {
+      const row = sheet.addRow({
+        id: r.id,
+        building: r.building_name || '-',
+        unit: r.unit_number || '-',
+        tenantName: `${r.tenant_first_name || ''} ${r.tenant_last_name || ''}`.trim() || '-',
+        phone: r.tenant_phone || '-',
+        title: r.title,
+        category: r.category,
+        priority: r.priority,
+        status: r.status?.replace('_', ' '),
+        description: r.description || '-',
+        resolutionNotes: r.resolution_notes || '-',
+        resolvedBy: r.resolver_first_name ? `${r.resolver_first_name} ${r.resolver_last_name}`.trim() : '-',
+        createdAt: formatDate(r.created_at),
+        resolvedAt: formatDate(r.resolved_at),
+      });
+
+      // Color code status
+      const statusCell = row.getCell('status');
+      switch (r.status) {
+        case 'COMPLETED':
+          statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD4EDDA' } };
+          statusCell.font = { color: { argb: 'FF155724' } };
+          break;
+        case 'PENDING':
+          statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF3CD' } };
+          statusCell.font = { color: { argb: 'FF856404' } };
+          break;
+        case 'IN_PROGRESS':
+          statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFCCE5FF' } };
+          statusCell.font = { color: { argb: 'FF004085' } };
+          break;
+        case 'CANCELLED':
+          statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E3E5' } };
+          statusCell.font = { color: { argb: 'FF383D41' } };
+          break;
+      }
+
+      // Color code priority
+      const priorityCell = row.getCell('priority');
+      switch (r.priority) {
+        case 'URGENT':
+          priorityCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8D7DA' } };
+          priorityCell.font = { bold: true, color: { argb: 'FF721C24' } };
+          break;
+        case 'HIGH':
+          priorityCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF3CD' } };
+          priorityCell.font = { color: { argb: 'FF856404' } };
+          break;
+        case 'MEDIUM':
+          priorityCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFCCE5FF' } };
+          priorityCell.font = { color: { argb: 'FF004085' } };
+          break;
+        case 'LOW':
+          priorityCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2E3E5' } };
+          priorityCell.font = { color: { argb: 'FF6C757D' } };
+          break;
+      }
+    });
+
+    // Add auto-filter
+    sheet.autoFilter = { from: 'A1', to: `N${requests.length + 1}` };
+
+    // ===== Summary Sheet =====
+    const summarySheet = workbook.addWorksheet('Summary');
+    summarySheet.columns = [
+      { header: 'Metric', key: 'metric', width: 30 },
+      { header: 'Value', key: 'value', width: 20 },
+    ];
+
+    const summaryHeaderRow = summarySheet.getRow(1);
+    summaryHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    summaryHeaderRow.fill = {
+      type: 'pattern', pattern: 'solid',
+      fgColor: { argb: 'FF1A365D' },
+    };
+
+    const totalRequests = requests.length;
+    const pending = requests.filter(r => r.status === 'PENDING').length;
+    const inProgress = requests.filter(r => r.status === 'IN_PROGRESS').length;
+    const completed = requests.filter(r => r.status === 'COMPLETED').length;
+    const cancelled = requests.filter(r => r.status === 'CANCELLED').length;
+    const urgent = requests.filter(r => r.priority === 'URGENT').length;
+    const high = requests.filter(r => r.priority === 'HIGH').length;
+
+    summarySheet.addRow({ metric: 'Total Requests', value: totalRequests });
+    summarySheet.addRow({ metric: 'Pending', value: pending });
+    summarySheet.addRow({ metric: 'In Progress', value: inProgress });
+    summarySheet.addRow({ metric: 'Completed', value: completed });
+    summarySheet.addRow({ metric: 'Cancelled', value: cancelled });
+    summarySheet.addRow({ metric: '', value: '' });
+    summarySheet.addRow({ metric: 'Urgent Priority', value: urgent });
+    summarySheet.addRow({ metric: 'High Priority', value: high });
+    summarySheet.addRow({ metric: '', value: '' });
+
+    // Category breakdown
+    const categories = ['PLUMBING', 'ELECTRICAL', 'HVAC', 'APPLIANCE', 'STRUCTURAL', 'OTHER'];
+    categories.forEach(cat => {
+      const count = requests.filter(r => r.category === cat).length;
+      if (count > 0) {
+        summarySheet.addRow({ metric: `Category: ${cat}`, value: count });
+      }
+    });
+
+    summarySheet.addRow({ metric: '', value: '' });
+    summarySheet.addRow({ metric: 'Report Generated', value: new Date().toLocaleString('en-US') });
+
+    return workbook;
   },
 };
 

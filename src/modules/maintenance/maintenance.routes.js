@@ -15,6 +15,13 @@ router.use(authenticate);
 router.get('/my-units', maintenanceController.getMyUnits);
 
 /**
+ * @route   GET /api/maintenance/export
+ * @desc    Export maintenance requests to Excel
+ * @access  Admin, Owner
+ */
+router.get('/export', isAdminOrOwner, maintenanceController.exportExcel);
+
+/**
  * @route   GET /api/maintenance
  * @desc    Get all maintenance requests (filtered by role)
  * @access  All authenticated users

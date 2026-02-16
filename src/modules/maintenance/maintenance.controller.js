@@ -1,6 +1,7 @@
 const maintenanceService = require('./maintenance.service');
 const maintenanceRepository = require('./maintenance.repository');
 const { HTTP_STATUS } = require('../../shared/constants');
+const { successResponse } = require('../../shared/utils/responseFormatter');
 const logger = require('../../shared/utils/logger');
 
 /**
@@ -166,6 +167,35 @@ const maintenanceController = {
         success: true,
         message: 'Maintenance request deleted successfully',
       });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Export maintenance requests to Excel
+   * GET /api/maintenance/export
+   */
+  async exportExcel(req, res, next) {
+    try {
+      const { buildingId, status, priority, category, dateFrom, dateTo } = req.query;
+
+      const filters = {};
+      if (buildingId) filters.buildingId = parseInt(buildingId);
+      if (status) filters.status = status;
+      if (priority) filters.priority = priority;
+      if (category) filters.category = category;
+      if (dateFrom) filters.dateFrom = dateFrom;
+      if (dateTo) filters.dateTo = dateTo;
+
+      const workbook = await maintenanceService.exportToExcel(filters, req.user);
+
+      const filename = `Maintenance_Report_${Date.now()}.xlsx`;
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+      await workbook.xlsx.write(res);
+      res.end();
     } catch (error) {
       next(error);
     }
