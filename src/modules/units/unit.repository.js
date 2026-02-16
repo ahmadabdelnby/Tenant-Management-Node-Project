@@ -1,215 +1,187 @@
-const { pool } = require('../../config/database');
+const { Unit, Building, Tenancy } = require('../../models');
+const { Op } = require('sequelize');
 const { UNIT_STATUS } = require('../../shared/constants');
 
+const BUILDING_INCLUDE = {
+  model: Building,
+  as: 'building',
+  attributes: ['name', 'address', 'owner_id'],
+};
+
 /**
- * Unit Repository - Database operations
+ * Unit Repository - Database operations (Sequelize)
  */
 const unitRepository = {
   /**
    * Find unit by ID
    */
   async findById(id) {
-    const [rows] = await pool.execute(
-      `SELECT u.*, b.name as building_name, b.address as building_address, b.owner_id
-       FROM units u
-       LEFT JOIN buildings b ON u.building_id = b.id
-       WHERE u.id = ? AND u.deleted_at IS NULL`,
-      [id]
-    );
-    return rows[0] || null;
+    const unit = await Unit.findByPk(id, {
+      include: [BUILDING_INCLUDE],
+    });
+    if (!unit) return null;
+    const plain = unit.get({ plain: true });
+    plain.building_name = plain.building?.name || null;
+    plain.building_address = plain.building?.address || null;
+    plain.owner_id = plain.building?.owner_id || null;
+    delete plain.building;
+    return plain;
   },
-  
+
   /**
    * Find all units with pagination
    */
   async findAll(limit, offset, filters = {}) {
-    let query = `SELECT u.*, b.name as building_name, b.address as building_address, b.owner_id
-                 FROM units u
-                 LEFT JOIN buildings b ON u.building_id = b.id
-                 WHERE u.deleted_at IS NULL AND b.deleted_at IS NULL`;
-    const params = [];
-    
-    // Apply filters
+    const where = {};
+    const buildingWhere = {};
+
     if (filters.buildingId) {
-      query += ' AND u.building_id = ?';
-      params.push(filters.buildingId);
+      where.building_id = filters.buildingId;
     }
-    
-    if (filters.ownerId) {
-      query += ' AND b.owner_id = ?';
-      params.push(filters.ownerId);
-    }
-    
     if (filters.status) {
-      query += ' AND u.status = ?';
-      params.push(filters.status);
+      where.status = filters.status;
     }
-    
     if (filters.minBedrooms) {
-      query += ' AND u.bedrooms >= ?';
-      params.push(filters.minBedrooms);
+      where.bedrooms = { [Op.gte]: filters.minBedrooms };
     }
-    
     if (filters.maxRent) {
-      query += ' AND u.rent_amount <= ?';
-      params.push(filters.maxRent);
+      where.rent_amount = { [Op.lte]: filters.maxRent };
     }
-    
-    // Add ordering and pagination
-    query += ` ORDER BY u.created_at DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`;
-    
-    const [rows] = await pool.execute(query, params);
-    return rows;
+    if (filters.ownerId) {
+      buildingWhere.owner_id = filters.ownerId;
+    }
+
+    const rows = await Unit.findAll({
+      where,
+      include: [{
+        model: Building,
+        as: 'building',
+        attributes: ['name', 'address', 'owner_id'],
+        where: Object.keys(buildingWhere).length ? buildingWhere : undefined,
+        required: Object.keys(buildingWhere).length > 0,
+      }],
+      order: [['created_at', 'DESC']],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+    });
+
+    return rows.map(u => {
+      const plain = u.get({ plain: true });
+      plain.building_name = plain.building?.name || null;
+      plain.building_address = plain.building?.address || null;
+      plain.owner_id = plain.building?.owner_id || null;
+      delete plain.building;
+      return plain;
+    });
   },
-  
+
   /**
    * Count total units
    */
   async count(filters = {}) {
-    let query = `SELECT COUNT(*) as total FROM units u
-                 LEFT JOIN buildings b ON u.building_id = b.id
-                 WHERE u.deleted_at IS NULL AND b.deleted_at IS NULL`;
-    const params = [];
-    
+    const where = {};
+    const buildingWhere = {};
+
     if (filters.buildingId) {
-      query += ' AND u.building_id = ?';
-      params.push(filters.buildingId);
+      where.building_id = filters.buildingId;
     }
-    
-    if (filters.ownerId) {
-      query += ' AND b.owner_id = ?';
-      params.push(filters.ownerId);
-    }
-    
     if (filters.status) {
-      query += ' AND u.status = ?';
-      params.push(filters.status);
+      where.status = filters.status;
     }
-    
     if (filters.minBedrooms) {
-      query += ' AND u.bedrooms >= ?';
-      params.push(filters.minBedrooms);
+      where.bedrooms = { [Op.gte]: filters.minBedrooms };
     }
-    
     if (filters.maxRent) {
-      query += ' AND u.rent_amount <= ?';
-      params.push(filters.maxRent);
+      where.rent_amount = { [Op.lte]: filters.maxRent };
     }
-    
-    const [rows] = await pool.execute(query, params);
-    return rows[0].total;
+    if (filters.ownerId) {
+      buildingWhere.owner_id = filters.ownerId;
+    }
+
+    return Unit.count({
+      where,
+      include: Object.keys(buildingWhere).length ? [{
+        model: Building,
+        as: 'building',
+        where: buildingWhere,
+      }] : [],
+    });
   },
-  
+
   /**
    * Create new unit
    */
   async create(unitData) {
     const { buildingId, unitNumber, floor, bedrooms, bathrooms, area, rentAmount, type } = unitData;
-    
-    const [result] = await pool.execute(
-      `INSERT INTO units (building_id, unit_number, floor, bedrooms, bathrooms, area_sqft, rent_amount, type, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-      [buildingId, unitNumber, floor || null, bedrooms, bathrooms, area || null, rentAmount, type || 'APARTMENT', UNIT_STATUS.AVAILABLE]
-    );
-    
-    return result.insertId;
+
+    const unit = await Unit.create({
+      building_id: buildingId,
+      unit_number: unitNumber,
+      floor: floor || null,
+      bedrooms,
+      bathrooms,
+      area_sqft: area || null,
+      rent_amount: rentAmount,
+      type: type || 'APARTMENT',
+      status: UNIT_STATUS.AVAILABLE,
+    });
+
+    return unit.id;
   },
-  
+
   /**
    * Update unit
    */
   async update(id, unitData) {
-    const fields = [];
-    const params = [];
-    
-    if (unitData.buildingId) {
-      fields.push('building_id = ?');
-      params.push(unitData.buildingId);
-    }
-    if (unitData.unitNumber) {
-      fields.push('unit_number = ?');
-      params.push(unitData.unitNumber);
-    }
-    if (unitData.floor !== undefined) {
-      fields.push('floor = ?');
-      params.push(unitData.floor);
-    }
-    if (unitData.bedrooms !== undefined) {
-      fields.push('bedrooms = ?');
-      params.push(unitData.bedrooms);
-    }
-    if (unitData.bathrooms !== undefined) {
-      fields.push('bathrooms = ?');
-      params.push(unitData.bathrooms);
-    }
-    if (unitData.area !== undefined) {
-      fields.push('area_sqft = ?');
-      params.push(unitData.area);
-    }
-    if (unitData.rentAmount !== undefined) {
-      fields.push('rent_amount = ?');
-      params.push(unitData.rentAmount);
-    }
-    if (unitData.status) {
-      fields.push('status = ?');
-      params.push(unitData.status);
-    }
-    if (unitData.type) {
-      fields.push('type = ?');
-      params.push(unitData.type);
-    }
-    
-    fields.push('updated_at = NOW()');
-    params.push(id);
-    
-    const query = `UPDATE units SET ${fields.join(', ')} WHERE id = ? AND deleted_at IS NULL`;
-    
-    const [result] = await pool.execute(query, params);
-    return result.affectedRows > 0;
+    const updateData = {};
+
+    if (unitData.buildingId) updateData.building_id = unitData.buildingId;
+    if (unitData.unitNumber) updateData.unit_number = unitData.unitNumber;
+    if (unitData.floor !== undefined) updateData.floor = unitData.floor;
+    if (unitData.bedrooms !== undefined) updateData.bedrooms = unitData.bedrooms;
+    if (unitData.bathrooms !== undefined) updateData.bathrooms = unitData.bathrooms;
+    if (unitData.area !== undefined) updateData.area_sqft = unitData.area;
+    if (unitData.rentAmount !== undefined) updateData.rent_amount = unitData.rentAmount;
+    if (unitData.status) updateData.status = unitData.status;
+    if (unitData.type) updateData.type = unitData.type;
+
+    const [affectedCount] = await Unit.update(updateData, { where: { id } });
+    return affectedCount > 0;
   },
-  
+
   /**
    * Update unit status
    */
   async updateStatus(id, status) {
-    const [result] = await pool.execute(
-      'UPDATE units SET status = ?, updated_at = NOW() WHERE id = ? AND deleted_at IS NULL',
-      [status, id]
-    );
-    return result.affectedRows > 0;
+    const [affectedCount] = await Unit.update({ status }, { where: { id } });
+    return affectedCount > 0;
   },
-  
+
   /**
-   * Soft delete unit
+   * Soft delete unit (paranoid handles deleted_at automatically)
    */
   async softDelete(id) {
-    const [result] = await pool.execute(
-      'UPDATE units SET deleted_at = NOW(), updated_at = NOW() WHERE id = ? AND deleted_at IS NULL',
-      [id]
-    );
-    return result.affectedRows > 0;
+    const affectedCount = await Unit.destroy({ where: { id } });
+    return affectedCount > 0;
   },
-  
+
   /**
    * Check if unit has active tenancy
    */
   async hasActiveTenancy(id) {
-    const [rows] = await pool.execute(
-      'SELECT COUNT(*) as count FROM tenancies WHERE unit_id = ? AND is_active = true',
-      [id]
-    );
-    return rows[0].count > 0;
+    const count = await Tenancy.count({ where: { unit_id: id, is_active: true } });
+    return count > 0;
   },
-  
+
   /**
    * Find units by building ID
    */
   async findByBuildingId(buildingId) {
-    const [rows] = await pool.execute(
-      `SELECT * FROM units WHERE building_id = ? AND deleted_at IS NULL ORDER BY unit_number`,
-      [buildingId]
-    );
-    return rows;
+    const rows = await Unit.findAll({
+      where: { building_id: buildingId },
+      order: [['unit_number', 'ASC']],
+    });
+    return rows.map(r => r.get({ plain: true }));
   },
 };
 

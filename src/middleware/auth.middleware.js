@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-const { pool } = require('../config/database');
+const { User, TokenBlacklist } = require('../models');
+const { Op } = require('sequelize');
 const { AppError } = require('../shared/errors');
 const { HTTP_STATUS, ERROR_MESSAGES } = require('../shared/constants');
 const logger = require('../shared/utils/logger');
@@ -36,26 +37,25 @@ const authenticate = async (req, res, next) => {
     }
     
     // Check if token is blacklisted
-    const [blacklisted] = await pool.execute(
-      'SELECT id FROM token_blacklist WHERE token_jti = ? AND expires_at > NOW()',
-      [decoded.jti]
-    );
+    const blacklisted = await TokenBlacklist.findOne({
+      where: {
+        token_jti: decoded.jti,
+        expires_at: { [Op.gt]: new Date() },
+      },
+    });
     
-    if (blacklisted.length > 0) {
+    if (blacklisted) {
       throw new AppError(ERROR_MESSAGES.TOKEN_BLACKLISTED, HTTP_STATUS.UNAUTHORIZED);
     }
     
     // Check if user exists and is active
-    const [users] = await pool.execute(
-      'SELECT id, email, first_name, last_name, role, is_active FROM users WHERE id = ? AND deleted_at IS NULL',
-      [decoded.userId]
-    );
+    const user = await User.findByPk(decoded.userId, {
+      attributes: ['id', 'email', 'first_name', 'last_name', 'role', 'is_active'],
+    });
     
-    if (users.length === 0) {
+    if (!user) {
       throw new AppError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS.UNAUTHORIZED);
     }
-    
-    const user = users[0];
     
     if (!user.is_active) {
       throw new AppError(ERROR_MESSAGES.ACCOUNT_DEACTIVATED, HTTP_STATUS.UNAUTHORIZED);

@@ -259,14 +259,14 @@ const paymentService = {
     
     // Try to find by hash
     if (parsed.hash) {
-      const { pool } = require('../../config/database');
-      const [rows] = await pool.execute(
-        'SELECT id FROM payments WHERE tahseeel_hash = ?',
-        [parsed.hash]
-      );
+      const { Payment } = require('../../models');
+      const payment = await Payment.findOne({
+        where: { tahseeel_hash: parsed.hash },
+        attributes: ['id'],
+      });
 
-      if (rows.length > 0) {
-        const paymentId = rows[0].id;
+      if (payment) {
+        const paymentId = payment.id;
 
         const updateData = {
           tahseeelTxId: parsed.txId,
@@ -301,12 +301,11 @@ const paymentService = {
   async getBuildingPaymentSummary(buildingId, month, year, user) {
     // Check access for owners
     if (user.role === ROLES.OWNER) {
-      const { pool } = require('../../config/database');
-      const [rows] = await pool.execute(
-        'SELECT owner_id FROM buildings WHERE id = ?',
-        [buildingId]
-      );
-      if (!rows[0] || rows[0].owner_id !== user.id) {
+      const { Building } = require('../../models');
+      const building = await Building.findByPk(buildingId, {
+        attributes: ['owner_id'],
+      });
+      if (!building || building.owner_id !== user.id) {
         throw new AuthorizationError(ERROR_MESSAGES.FORBIDDEN);
       }
     }

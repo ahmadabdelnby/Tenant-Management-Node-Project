@@ -1,183 +1,145 @@
-const { pool } = require('../../config/database');
+const { User } = require('../../models');
+const { Op } = require('sequelize');
+
+const USER_ATTRIBUTES = ['id', 'email', 'first_name', 'last_name', 'phone', 'role', 'is_active', 'created_at', 'updated_at'];
 
 /**
- * User Repository - Database operations
+ * User Repository - Database operations (Sequelize)
  */
 const userRepository = {
   /**
    * Find user by ID
    */
   async findById(id) {
-    const [rows] = await pool.execute(
-      `SELECT id, email, first_name, last_name, phone, role, is_active, created_at, updated_at 
-       FROM users WHERE id = ? AND deleted_at IS NULL`,
-      [id]
-    );
-    return rows[0] || null;
+    const user = await User.findByPk(id, { attributes: USER_ATTRIBUTES });
+    return user ? user.get({ plain: true }) : null;
   },
-  
+
   /**
    * Find user by email
    */
   async findByEmail(email) {
-    const [rows] = await pool.execute(
-      `SELECT id, email, first_name, last_name, phone, role, is_active, created_at, updated_at 
-       FROM users WHERE email = ? AND deleted_at IS NULL`,
-      [email.toLowerCase()]
-    );
-    return rows[0] || null;
+    const user = await User.findOne({
+      where: { email: email.toLowerCase() },
+      attributes: USER_ATTRIBUTES,
+    });
+    return user ? user.get({ plain: true }) : null;
   },
-  
+
   /**
    * Find all users with pagination
    */
   async findAll(limit, offset, filters = {}) {
-    let query = `SELECT id, email, first_name, last_name, phone, role, is_active, created_at, updated_at 
-                 FROM users WHERE deleted_at IS NULL`;
-    const params = [];
-    
-    // Apply filters
+    const where = {};
+
     if (filters.role) {
-      query += ' AND role = ?';
-      params.push(filters.role);
+      where.role = filters.role;
     }
-    
     if (filters.isActive !== undefined) {
-      query += ' AND is_active = ?';
-      params.push(filters.isActive ? 1 : 0);
+      where.is_active = filters.isActive ? true : false;
     }
-    
     if (filters.search) {
-      query += ' AND (email LIKE ? OR first_name LIKE ? OR last_name LIKE ?)';
       const searchTerm = `%${filters.search}%`;
-      params.push(searchTerm, searchTerm, searchTerm);
+      where[Op.or] = [
+        { email: { [Op.like]: searchTerm } },
+        { first_name: { [Op.like]: searchTerm } },
+        { last_name: { [Op.like]: searchTerm } },
+      ];
     }
-    
-    // Add ordering and pagination
-    query += ` ORDER BY created_at DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`;
-    
-    const [rows] = await pool.execute(query, params);
-    return rows;
+
+    const rows = await User.findAll({
+      where,
+      attributes: USER_ATTRIBUTES,
+      order: [['created_at', 'DESC']],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+    });
+    return rows.map(r => r.get({ plain: true }));
   },
-  
+
   /**
    * Count total users
    */
   async count(filters = {}) {
-    let query = 'SELECT COUNT(*) as total FROM users WHERE deleted_at IS NULL';
-    const params = [];
-    
+    const where = {};
+
     if (filters.role) {
-      query += ' AND role = ?';
-      params.push(filters.role);
+      where.role = filters.role;
     }
-    
     if (filters.isActive !== undefined) {
-      query += ' AND is_active = ?';
-      params.push(filters.isActive ? 1 : 0);
+      where.is_active = filters.isActive ? true : false;
     }
-    
     if (filters.search) {
-      query += ' AND (email LIKE ? OR first_name LIKE ? OR last_name LIKE ?)';
       const searchTerm = `%${filters.search}%`;
-      params.push(searchTerm, searchTerm, searchTerm);
+      where[Op.or] = [
+        { email: { [Op.like]: searchTerm } },
+        { first_name: { [Op.like]: searchTerm } },
+        { last_name: { [Op.like]: searchTerm } },
+      ];
     }
-    
-    const [rows] = await pool.execute(query, params);
-    return rows[0].total;
+
+    return User.count({ where });
   },
-  
+
   /**
    * Create new user
    */
   async create(userData) {
     const { email, passwordHash, firstName, lastName, role, phone } = userData;
-    
-    const [result] = await pool.execute(
-      `INSERT INTO users (email, password_hash, first_name, last_name, phone, role, is_active, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, true, NOW(), NOW())`,
-      [email.toLowerCase(), passwordHash, firstName, lastName, phone || null, role]
-    );
-    
-    return result.insertId;
+
+    const user = await User.create({
+      email: email.toLowerCase(),
+      password_hash: passwordHash,
+      first_name: firstName,
+      last_name: lastName,
+      phone: phone || null,
+      role,
+      is_active: true,
+    });
+
+    return user.id;
   },
-  
+
   /**
    * Update user
    */
   async update(id, userData) {
-    const fields = [];
-    const params = [];
-    
-    if (userData.email) {
-      fields.push('email = ?');
-      params.push(userData.email.toLowerCase());
-    }
-    if (userData.firstName) {
-      fields.push('first_name = ?');
-      params.push(userData.firstName);
-    }
-    if (userData.lastName) {
-      fields.push('last_name = ?');
-      params.push(userData.lastName);
-    }
-    if (userData.phone !== undefined) {
-      fields.push('phone = ?');
-      params.push(userData.phone || null);
-    }
-    if (userData.role) {
-      fields.push('role = ?');
-      params.push(userData.role);
-    }
-    if (userData.isActive !== undefined) {
-      fields.push('is_active = ?');
-      params.push(userData.isActive);
-    }
-    if (userData.passwordHash) {
-      fields.push('password_hash = ?');
-      params.push(userData.passwordHash);
-    }
-    
-    fields.push('updated_at = NOW()');
-    params.push(id);
-    
-    const query = `UPDATE users SET ${fields.join(', ')} WHERE id = ? AND deleted_at IS NULL`;
-    
-    const [result] = await pool.execute(query, params);
-    return result.affectedRows > 0;
+    const updateData = {};
+
+    if (userData.email) updateData.email = userData.email.toLowerCase();
+    if (userData.firstName) updateData.first_name = userData.firstName;
+    if (userData.lastName) updateData.last_name = userData.lastName;
+    if (userData.phone !== undefined) updateData.phone = userData.phone || null;
+    if (userData.role) updateData.role = userData.role;
+    if (userData.isActive !== undefined) updateData.is_active = userData.isActive;
+    if (userData.passwordHash) updateData.password_hash = userData.passwordHash;
+
+    const [affectedCount] = await User.update(updateData, { where: { id } });
+    return affectedCount > 0;
   },
-  
+
   /**
-   * Soft delete user
+   * Soft delete user (paranoid handles deleted_at automatically)
    */
   async softDelete(id) {
-    const [result] = await pool.execute(
-      'UPDATE users SET deleted_at = NOW(), updated_at = NOW() WHERE id = ? AND deleted_at IS NULL',
-      [id]
-    );
-    return result.affectedRows > 0;
+    const affectedCount = await User.destroy({ where: { id } });
+    return affectedCount > 0;
   },
-  
+
   /**
    * Deactivate user
    */
   async deactivate(id) {
-    const [result] = await pool.execute(
-      'UPDATE users SET is_active = false, updated_at = NOW() WHERE id = ? AND deleted_at IS NULL',
-      [id]
-    );
-    return result.affectedRows > 0;
+    const [affectedCount] = await User.update({ is_active: false }, { where: { id } });
+    return affectedCount > 0;
   },
-  
+
   /**
    * Activate user
    */
   async activate(id) {
-    const [result] = await pool.execute(
-      'UPDATE users SET is_active = true, updated_at = NOW() WHERE id = ? AND deleted_at IS NULL',
-      [id]
-    );
-    return result.affectedRows > 0;
+    const [affectedCount] = await User.update({ is_active: true }, { where: { id } });
+    return affectedCount > 0;
   },
 };
 

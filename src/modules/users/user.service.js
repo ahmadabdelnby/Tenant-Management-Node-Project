@@ -211,16 +211,14 @@ const userService = {
    */
   async changePassword(userId, { currentPassword, newPassword }) {
     // Get user with password hash
-    const [users] = await require('../../config/database').pool.execute(
-      'SELECT id, password_hash FROM users WHERE id = ? AND deleted_at IS NULL',
-      [userId]
-    );
+    const { User } = require('../../models');
+    const user = await User.findByPk(userId, {
+      attributes: ['id', 'password_hash'],
+    });
     
-    if (users.length === 0) {
+    if (!user) {
       throw new NotFoundError(ERROR_MESSAGES.USER_NOT_FOUND);
     }
-    
-    const user = users[0];
     
     // Verify current password
     const isPasswordValid = await bcrypt.compare(currentPassword, user.password_hash);

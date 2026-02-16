@@ -1,172 +1,161 @@
-const { pool } = require('../../config/database');
+const { Building, User, Unit } = require('../../models');
+const { Op, fn, col, literal } = require('sequelize');
+
+const OWNER_INCLUDE = {
+  model: User,
+  as: 'owner',
+  attributes: ['email', 'first_name', 'last_name'],
+};
 
 /**
- * Building Repository - Database operations
+ * Building Repository - Database operations (Sequelize)
  */
 const buildingRepository = {
   /**
    * Find building by ID
    */
   async findById(id) {
-    const [rows] = await pool.execute(
-      `SELECT b.*, u.email as owner_email, u.first_name as owner_first_name, u.last_name as owner_last_name
-       FROM buildings b
-       LEFT JOIN users u ON b.owner_id = u.id
-       WHERE b.id = ? AND b.deleted_at IS NULL`,
-      [id]
-    );
-    return rows[0] || null;
+    const building = await Building.findByPk(id, {
+      include: [OWNER_INCLUDE],
+    });
+    if (!building) return null;
+    const plain = building.get({ plain: true });
+    // Flatten owner fields for backward compatibility
+    plain.owner_email = plain.owner?.email || null;
+    plain.owner_first_name = plain.owner?.first_name || null;
+    plain.owner_last_name = plain.owner?.last_name || null;
+    delete plain.owner;
+    return plain;
   },
-  
+
   /**
    * Find all buildings with pagination
    */
   async findAll(limit, offset, filters = {}) {
-    let query = `SELECT b.*, u.email as owner_email, u.first_name as owner_first_name, u.last_name as owner_last_name,
-                 (SELECT COUNT(*) FROM units WHERE building_id = b.id AND deleted_at IS NULL) as total_units
-                 FROM buildings b
-                 LEFT JOIN users u ON b.owner_id = u.id
-                 WHERE b.deleted_at IS NULL`;
-    const params = [];
-    
-    // Apply filters
+    const where = {};
+
     if (filters.ownerId) {
-      query += ' AND b.owner_id = ?';
-      params.push(filters.ownerId);
+      where.owner_id = filters.ownerId;
     }
-    
     if (filters.city) {
-      query += ' AND b.city LIKE ?';
-      params.push(`%${filters.city}%`);
+      where.city = { [Op.like]: `%${filters.city}%` };
     }
-    
     if (filters.search) {
-      query += ' AND (b.name LIKE ? OR b.address LIKE ? OR b.city LIKE ?)';
       const searchTerm = `%${filters.search}%`;
-      params.push(searchTerm, searchTerm, searchTerm);
+      where[Op.or] = [
+        { name: { [Op.like]: searchTerm } },
+        { address: { [Op.like]: searchTerm } },
+        { city: { [Op.like]: searchTerm } },
+      ];
     }
-    
-    // Add ordering and pagination
-    query += ` ORDER BY b.created_at DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`;
-    
-    const [rows] = await pool.execute(query, params);
-    return rows;
+
+    const rows = await Building.findAll({
+      where,
+      include: [OWNER_INCLUDE],
+      attributes: {
+        include: [
+          [literal('(SELECT COUNT(*) FROM units WHERE units.building_id = Building.id AND units.deleted_at IS NULL)'), 'total_units'],
+        ],
+      },
+      order: [['created_at', 'DESC']],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+    });
+
+    return rows.map(b => {
+      const plain = b.get({ plain: true });
+      plain.owner_email = plain.owner?.email || null;
+      plain.owner_first_name = plain.owner?.first_name || null;
+      plain.owner_last_name = plain.owner?.last_name || null;
+      delete plain.owner;
+      return plain;
+    });
   },
-  
+
   /**
    * Count total buildings
    */
   async count(filters = {}) {
-    let query = 'SELECT COUNT(*) as total FROM buildings WHERE deleted_at IS NULL';
-    const params = [];
-    
+    const where = {};
+
     if (filters.ownerId) {
-      query += ' AND owner_id = ?';
-      params.push(filters.ownerId);
+      where.owner_id = filters.ownerId;
     }
-    
     if (filters.city) {
-      query += ' AND city LIKE ?';
-      params.push(`%${filters.city}%`);
+      where.city = { [Op.like]: `%${filters.city}%` };
     }
-    
     if (filters.search) {
-      query += ' AND (name LIKE ? OR address LIKE ? OR city LIKE ?)';
       const searchTerm = `%${filters.search}%`;
-      params.push(searchTerm, searchTerm, searchTerm);
+      where[Op.or] = [
+        { name: { [Op.like]: searchTerm } },
+        { address: { [Op.like]: searchTerm } },
+        { city: { [Op.like]: searchTerm } },
+      ];
     }
-    
-    const [rows] = await pool.execute(query, params);
-    return rows[0].total;
+
+    return Building.count({ where });
   },
-  
+
   /**
    * Create new building
    */
   async create(buildingData) {
     const { name, address, city, postalCode, country, ownerId } = buildingData;
-    
-    const [result] = await pool.execute(
-      `INSERT INTO buildings (name, address, city, postal_code, country, owner_id, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-      [name, address, city, postalCode || null, country, ownerId]
-    );
-    
-    return result.insertId;
+
+    const building = await Building.create({
+      name,
+      address,
+      city,
+      postal_code: postalCode || null,
+      country,
+      owner_id: ownerId,
+    });
+
+    return building.id;
   },
-  
+
   /**
    * Update building
    */
   async update(id, buildingData) {
-    const fields = [];
-    const params = [];
-    
-    if (buildingData.name) {
-      fields.push('name = ?');
-      params.push(buildingData.name);
-    }
-    if (buildingData.address) {
-      fields.push('address = ?');
-      params.push(buildingData.address);
-    }
-    if (buildingData.city) {
-      fields.push('city = ?');
-      params.push(buildingData.city);
-    }
-    if (buildingData.postalCode !== undefined) {
-      fields.push('postal_code = ?');
-      params.push(buildingData.postalCode || null);
-    }
-    if (buildingData.country) {
-      fields.push('country = ?');
-      params.push(buildingData.country);
-    }
-    if (buildingData.ownerId) {
-      fields.push('owner_id = ?');
-      params.push(buildingData.ownerId);
-    }
-    
-    fields.push('updated_at = NOW()');
-    params.push(id);
-    
-    const query = `UPDATE buildings SET ${fields.join(', ')} WHERE id = ? AND deleted_at IS NULL`;
-    
-    const [result] = await pool.execute(query, params);
-    return result.affectedRows > 0;
+    const updateData = {};
+
+    if (buildingData.name) updateData.name = buildingData.name;
+    if (buildingData.address) updateData.address = buildingData.address;
+    if (buildingData.city) updateData.city = buildingData.city;
+    if (buildingData.postalCode !== undefined) updateData.postal_code = buildingData.postalCode || null;
+    if (buildingData.country) updateData.country = buildingData.country;
+    if (buildingData.ownerId) updateData.owner_id = buildingData.ownerId;
+
+    const [affectedCount] = await Building.update(updateData, { where: { id } });
+    return affectedCount > 0;
   },
-  
+
   /**
-   * Soft delete building
+   * Soft delete building (paranoid handles deleted_at automatically)
    */
   async softDelete(id) {
-    const [result] = await pool.execute(
-      'UPDATE buildings SET deleted_at = NOW(), updated_at = NOW() WHERE id = ? AND deleted_at IS NULL',
-      [id]
-    );
-    return result.affectedRows > 0;
+    const affectedCount = await Building.destroy({ where: { id } });
+    return affectedCount > 0;
   },
-  
+
   /**
    * Check if building has units
    */
   async hasUnits(id) {
-    const [rows] = await pool.execute(
-      'SELECT COUNT(*) as count FROM units WHERE building_id = ? AND deleted_at IS NULL',
-      [id]
-    );
-    return rows[0].count > 0;
+    const count = await Unit.count({ where: { building_id: id } });
+    return count > 0;
   },
-  
+
   /**
    * Get buildings by owner ID
    */
   async findByOwnerId(ownerId) {
-    const [rows] = await pool.execute(
-      `SELECT * FROM buildings WHERE owner_id = ? AND deleted_at IS NULL ORDER BY created_at DESC`,
-      [ownerId]
-    );
-    return rows;
+    const rows = await Building.findAll({
+      where: { owner_id: ownerId },
+      order: [['created_at', 'DESC']],
+    });
+    return rows.map(r => r.get({ plain: true }));
   },
 };
 

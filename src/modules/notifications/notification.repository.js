@@ -1,54 +1,43 @@
-const { pool } = require('../../config/database');
+const { Notification } = require('../../models');
+const { Op } = require('sequelize');
 
 /**
- * Notification Repository - Database operations
+ * Notification Repository - Database operations (Sequelize)
  */
 const notificationRepository = {
   /**
    * Find notification by ID
    */
   async findById(id) {
-    const [rows] = await pool.execute(
-      'SELECT * FROM notifications WHERE id = ?',
-      [id]
-    );
-    return rows[0] || null;
+    const notification = await Notification.findByPk(id);
+    return notification ? notification.get({ plain: true }) : null;
   },
 
   /**
    * Find notifications for a user
    */
   async findByUserId(userId, limit = 20, offset = 0) {
-    const [rows] = await pool.execute(
-      `SELECT * FROM notifications 
-       WHERE user_id = ? 
-       ORDER BY created_at DESC 
-       LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`,
-      [userId]
-    );
-    return rows;
+    const rows = await Notification.findAll({
+      where: { user_id: userId },
+      order: [['created_at', 'DESC']],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+    });
+    return rows.map(r => r.get({ plain: true }));
   },
 
   /**
    * Count notifications for a user
    */
   async countByUserId(userId) {
-    const [rows] = await pool.execute(
-      'SELECT COUNT(*) as total FROM notifications WHERE user_id = ?',
-      [userId]
-    );
-    return rows[0].total;
+    return Notification.count({ where: { user_id: userId } });
   },
 
   /**
    * Count unread notifications for a user
    */
   async countUnread(userId) {
-    const [rows] = await pool.execute(
-      'SELECT COUNT(*) as total FROM notifications WHERE user_id = ? AND is_read = false',
-      [userId]
-    );
-    return rows[0].total;
+    return Notification.count({ where: { user_id: userId, is_read: false } });
   },
 
   /**
@@ -56,56 +45,57 @@ const notificationRepository = {
    */
   async create(data) {
     const { userId, title, message, type, link, metadata } = data;
-    const [result] = await pool.execute(
-      `INSERT INTO notifications (user_id, title, message, type, link, metadata, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, NOW())`,
-      [userId, title, message, type || 'GENERAL', link || null, metadata ? JSON.stringify(metadata) : null]
-    );
-    return result.insertId;
+
+    const notification = await Notification.create({
+      user_id: userId,
+      title,
+      message,
+      type: type || 'GENERAL',
+      link: link || null,
+      metadata: metadata || null,
+    });
+
+    return notification.id;
   },
 
   /**
    * Mark notification as read
    */
   async markAsRead(id) {
-    const [result] = await pool.execute(
-      'UPDATE notifications SET is_read = true WHERE id = ?',
-      [id]
-    );
-    return result.affectedRows > 0;
+    const [affectedCount] = await Notification.update({ is_read: true }, { where: { id } });
+    return affectedCount > 0;
   },
 
   /**
    * Mark all notifications as read for a user
    */
   async markAllAsRead(userId) {
-    const [result] = await pool.execute(
-      'UPDATE notifications SET is_read = true WHERE user_id = ? AND is_read = false',
-      [userId]
+    const [affectedCount] = await Notification.update(
+      { is_read: true },
+      { where: { user_id: userId, is_read: false } }
     );
-    return result.affectedRows;
+    return affectedCount;
   },
 
   /**
    * Delete notification
    */
   async delete(id) {
-    const [result] = await pool.execute(
-      'DELETE FROM notifications WHERE id = ?',
-      [id]
-    );
-    return result.affectedRows > 0;
+    const affectedCount = await Notification.destroy({ where: { id } });
+    return affectedCount > 0;
   },
 
   /**
    * Delete old notifications (older than 30 days)
    */
   async deleteOld(days = 30) {
-    const [result] = await pool.execute(
-      'DELETE FROM notifications WHERE created_at < DATE_SUB(NOW(), INTERVAL ? DAY)',
-      [days]
-    );
-    return result.affectedRows;
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+
+    const affectedCount = await Notification.destroy({
+      where: { created_at: { [Op.lt]: cutoff } },
+    });
+    return affectedCount;
   },
 };
 

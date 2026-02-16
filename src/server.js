@@ -1,6 +1,6 @@
 const app = require('./app');
 const config = require('./config');
-const { testConnection } = require('./config/database');
+const { testConnection } = require('./models');
 const logger = require('./shared/utils/logger');
 
 // ============================================

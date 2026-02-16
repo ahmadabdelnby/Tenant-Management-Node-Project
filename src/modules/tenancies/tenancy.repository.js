@@ -1,202 +1,221 @@
-const { pool } = require('../../config/database');
+const { Tenancy, Unit, Building, User } = require('../../models');
+const { Op } = require('sequelize');
+
+const FULL_INCLUDE = [
+  {
+    model: Unit,
+    as: 'unit',
+    attributes: ['unit_number', 'building_id'],
+    include: [{
+      model: Building,
+      as: 'building',
+      attributes: ['name', 'owner_id', 'address'],
+    }],
+  },
+  {
+    model: User,
+    as: 'tenant',
+    attributes: ['email', 'first_name', 'last_name'],
+  },
+];
 
 /**
- * Tenancy Repository - Database operations
+ * Helper to flatten nested includes for backward compatibility
+ */
+function flattenTenancy(plain) {
+  plain.unit_number = plain.unit?.unit_number || null;
+  plain.building_id = plain.unit?.building_id || null;
+  plain.building_name = plain.unit?.building?.name || null;
+  plain.building_address = plain.unit?.building?.address || null;
+  plain.owner_id = plain.unit?.building?.owner_id || null;
+  plain.tenant_email = plain.tenant?.email || null;
+  plain.tenant_first_name = plain.tenant?.first_name || null;
+  plain.tenant_last_name = plain.tenant?.last_name || null;
+  delete plain.unit;
+  delete plain.tenant;
+  return plain;
+}
+
+/**
+ * Tenancy Repository - Database operations (Sequelize)
  */
 const tenancyRepository = {
   /**
    * Find tenancy by ID
    */
   async findById(id) {
-    const [rows] = await pool.execute(
-      `SELECT t.*, 
-              u.unit_number, u.building_id,
-              b.name as building_name, b.owner_id,
-              tenant.email as tenant_email, tenant.first_name as tenant_first_name, tenant.last_name as tenant_last_name
-       FROM tenancies t
-       LEFT JOIN units u ON t.unit_id = u.id
-       LEFT JOIN buildings b ON u.building_id = b.id
-       LEFT JOIN users tenant ON t.tenant_id = tenant.id
-       WHERE t.id = ?`,
-      [id]
-    );
-    return rows[0] || null;
+    const tenancy = await Tenancy.findByPk(id, { include: FULL_INCLUDE });
+    if (!tenancy) return null;
+    return flattenTenancy(tenancy.get({ plain: true }));
   },
-  
+
   /**
    * Find all tenancies with pagination
    */
   async findAll(limit, offset, filters = {}) {
-    let query = `SELECT t.*, 
-                        u.unit_number, u.building_id,
-                        b.name as building_name, b.owner_id,
-                        tenant.email as tenant_email, tenant.first_name as tenant_first_name, tenant.last_name as tenant_last_name
-                 FROM tenancies t
-                 LEFT JOIN units u ON t.unit_id = u.id
-                 LEFT JOIN buildings b ON u.building_id = b.id
-                 LEFT JOIN users tenant ON t.tenant_id = tenant.id
-                 WHERE 1=1`;
-    const params = [];
-    
-    // Apply filters
-    if (filters.unitId) {
-      query += ' AND t.unit_id = ?';
-      params.push(filters.unitId);
-    }
-    
-    if (filters.tenantId) {
-      query += ' AND t.tenant_id = ?';
-      params.push(filters.tenantId);
-    }
-    
-    if (filters.ownerId) {
-      query += ' AND b.owner_id = ?';
-      params.push(filters.ownerId);
-    }
-    
-    if (filters.isActive !== undefined) {
-      query += ' AND t.is_active = ?';
-      params.push(filters.isActive ? 1 : 0);
-    }
-    
+    const where = {};
+    const buildingWhere = {};
+
+    if (filters.unitId) where.unit_id = filters.unitId;
+    if (filters.tenantId) where.tenant_id = filters.tenantId;
+    if (filters.isActive !== undefined) where.is_active = filters.isActive ? true : false;
+
+    if (filters.ownerId) buildingWhere.owner_id = filters.ownerId;
+
+    const unitInclude = {
+      model: Unit,
+      as: 'unit',
+      attributes: ['unit_number', 'building_id'],
+      include: [{
+        model: Building,
+        as: 'building',
+        attributes: ['name', 'owner_id', 'address'],
+        where: Object.keys(buildingWhere).length ? buildingWhere : undefined,
+        required: Object.keys(buildingWhere).length > 0,
+      }],
+    };
+
     if (filters.buildingId) {
-      query += ' AND u.building_id = ?';
-      params.push(filters.buildingId);
+      unitInclude.where = { building_id: filters.buildingId };
+      unitInclude.required = true;
     }
-    
-    // Add ordering and pagination
-    query += ` ORDER BY t.created_at DESC LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}`;
-    
-    const [rows] = await pool.execute(query, params);
-    return rows;
+
+    const rows = await Tenancy.findAll({
+      where,
+      include: [
+        unitInclude,
+        { model: User, as: 'tenant', attributes: ['email', 'first_name', 'last_name'] },
+      ],
+      order: [['created_at', 'DESC']],
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+    });
+
+    return rows.map(t => flattenTenancy(t.get({ plain: true })));
   },
-  
+
   /**
    * Count total tenancies
    */
   async count(filters = {}) {
-    let query = `SELECT COUNT(*) as total 
-                 FROM tenancies t
-                 LEFT JOIN units u ON t.unit_id = u.id
-                 LEFT JOIN buildings b ON u.building_id = b.id
-                 WHERE 1=1`;
-    const params = [];
-    
-    if (filters.unitId) {
-      query += ' AND t.unit_id = ?';
-      params.push(filters.unitId);
+    const where = {};
+    const buildingWhere = {};
+
+    if (filters.unitId) where.unit_id = filters.unitId;
+    if (filters.tenantId) where.tenant_id = filters.tenantId;
+    if (filters.isActive !== undefined) where.is_active = filters.isActive;
+
+    if (filters.ownerId) buildingWhere.owner_id = filters.ownerId;
+
+    const includes = [];
+    const unitInclude = {
+      model: Unit,
+      as: 'unit',
+      attributes: [],
+      include: [],
+    };
+
+    if (Object.keys(buildingWhere).length) {
+      unitInclude.include.push({
+        model: Building,
+        as: 'building',
+        attributes: [],
+        where: buildingWhere,
+        required: true,
+      });
+      unitInclude.required = true;
     }
-    
-    if (filters.tenantId) {
-      query += ' AND t.tenant_id = ?';
-      params.push(filters.tenantId);
-    }
-    
-    if (filters.ownerId) {
-      query += ' AND b.owner_id = ?';
-      params.push(filters.ownerId);
-    }
-    
-    if (filters.isActive !== undefined) {
-      query += ' AND t.is_active = ?';
-      params.push(filters.isActive);
-    }
-    
+
     if (filters.buildingId) {
-      query += ' AND u.building_id = ?';
-      params.push(filters.buildingId);
+      unitInclude.where = { building_id: filters.buildingId };
+      unitInclude.required = true;
     }
-    
-    const [rows] = await pool.execute(query, params);
-    return rows[0].total;
+
+    if (unitInclude.required || unitInclude.where) {
+      includes.push(unitInclude);
+    }
+
+    return Tenancy.count({ where, include: includes });
   },
-  
+
   /**
    * Create new tenancy
    */
   async create(tenancyData) {
     const { unitId, tenantId, startDate, endDate, monthlyRent, depositAmount } = tenancyData;
-    
-    const [result] = await pool.execute(
-      `INSERT INTO tenancies (unit_id, tenant_id, start_date, end_date, monthly_rent, deposit_amount, is_active, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, true, NOW(), NOW())`,
-      [unitId, tenantId, startDate, endDate, monthlyRent, depositAmount]
-    );
-    
-    return result.insertId;
+
+    const tenancy = await Tenancy.create({
+      unit_id: unitId,
+      tenant_id: tenantId,
+      start_date: startDate,
+      end_date: endDate,
+      monthly_rent: monthlyRent,
+      deposit_amount: depositAmount,
+      is_active: true,
+    });
+
+    return tenancy.id;
   },
-  
+
   /**
    * Update tenancy
    */
   async update(id, tenancyData) {
-    const fields = [];
-    const params = [];
-    
-    if (tenancyData.endDate) {
-      fields.push('end_date = ?');
-      params.push(tenancyData.endDate);
-    }
-    if (tenancyData.monthlyRent !== undefined) {
-      fields.push('monthly_rent = ?');
-      params.push(tenancyData.monthlyRent);
-    }
-    if (tenancyData.depositAmount !== undefined) {
-      fields.push('deposit_amount = ?');
-      params.push(tenancyData.depositAmount);
-    }
-    if (tenancyData.isActive !== undefined) {
-      fields.push('is_active = ?');
-      params.push(tenancyData.isActive);
-    }
-    
-    fields.push('updated_at = NOW()');
-    params.push(id);
-    
-    const query = `UPDATE tenancies SET ${fields.join(', ')} WHERE id = ?`;
-    
-    const [result] = await pool.execute(query, params);
-    return result.affectedRows > 0;
+    const updateData = {};
+
+    if (tenancyData.endDate) updateData.end_date = tenancyData.endDate;
+    if (tenancyData.monthlyRent !== undefined) updateData.monthly_rent = tenancyData.monthlyRent;
+    if (tenancyData.depositAmount !== undefined) updateData.deposit_amount = tenancyData.depositAmount;
+    if (tenancyData.isActive !== undefined) updateData.is_active = tenancyData.isActive;
+
+    const [affectedCount] = await Tenancy.update(updateData, { where: { id } });
+    return affectedCount > 0;
   },
-  
+
   /**
    * End tenancy
    */
   async endTenancy(id) {
-    const [result] = await pool.execute(
-      'UPDATE tenancies SET is_active = false, updated_at = NOW() WHERE id = ?',
-      [id]
-    );
-    return result.affectedRows > 0;
+    const [affectedCount] = await Tenancy.update({ is_active: false }, { where: { id } });
+    return affectedCount > 0;
   },
-  
+
   /**
    * Find active tenancy for unit
    */
   async findActiveByUnitId(unitId) {
-    const [rows] = await pool.execute(
-      `SELECT * FROM tenancies WHERE unit_id = ? AND is_active = true`,
-      [unitId]
-    );
-    return rows[0] || null;
+    const tenancy = await Tenancy.findOne({ where: { unit_id: unitId, is_active: true } });
+    return tenancy ? tenancy.get({ plain: true }) : null;
   },
-  
+
   /**
    * Find tenancies by tenant ID
    */
   async findByTenantId(tenantId) {
-    const [rows] = await pool.execute(
-      `SELECT t.*, 
-              u.unit_number, u.building_id,
-              b.name as building_name, b.address as building_address
-       FROM tenancies t
-       LEFT JOIN units u ON t.unit_id = u.id
-       LEFT JOIN buildings b ON u.building_id = b.id
-       WHERE t.tenant_id = ?
-       ORDER BY t.created_at DESC`,
-      [tenantId]
-    );
-    return rows;
+    const rows = await Tenancy.findAll({
+      where: { tenant_id: tenantId },
+      include: [{
+        model: Unit,
+        as: 'unit',
+        attributes: ['unit_number', 'building_id'],
+        include: [{
+          model: Building,
+          as: 'building',
+          attributes: ['name', 'address'],
+        }],
+      }],
+      order: [['created_at', 'DESC']],
+    });
+
+    return rows.map(t => {
+      const plain = t.get({ plain: true });
+      plain.unit_number = plain.unit?.unit_number || null;
+      plain.building_id = plain.unit?.building_id || null;
+      plain.building_name = plain.unit?.building?.name || null;
+      plain.building_address = plain.unit?.building?.address || null;
+      delete plain.unit;
+      return plain;
+    });
   },
 };
 
