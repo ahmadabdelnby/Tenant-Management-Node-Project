@@ -74,4 +74,18 @@ router.patch(
   tenancyController.end
 );
 
+/**
+ * @route   DELETE /api/tenancies/:id
+ * @desc    Delete tenancy
+ * @access  Admin only
+ */
+router.delete(
+  '/:id',
+  authenticate,
+  isAdmin,
+  validate(tenancyIdParamSchema, 'params'),
+  auditLog('DELETE', 'TENANCY'),
+  tenancyController.delete
+);
+
 module.exports = router;

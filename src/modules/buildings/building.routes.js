@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const buildingController = require('./building.controller');
 const { createBuildingSchema, updateBuildingSchema, buildingIdParamSchema } = require('./building.validation');
-const { authenticate, isAdmin, isAdminOrOwner, validate, auditLog } = require('../../middleware');
+const { authenticate, isAdmin, isAdminOrOwner, isAuthenticated, validate, auditLog } = require('../../middleware');
 
 /**
  * @route   GET /api/buildings
@@ -28,12 +28,12 @@ router.post(
 /**
  * @route   GET /api/buildings/:id
  * @desc    Get building by ID
- * @access  Admin, Owner (own buildings only)
+ * @access  Admin, Owner (own buildings only), Tenant (own tenancy building)
  */
 router.get(
   '/:id',
   authenticate,
-  isAdminOrOwner,
+  isAuthenticated,
   validate(buildingIdParamSchema, 'params'),
   buildingController.getById
 );

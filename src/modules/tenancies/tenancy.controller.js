@@ -116,6 +116,22 @@ const tenancyController = {
       next(error);
     }
   },
+
+  /**
+   * Delete tenancy
+   * DELETE /api/tenancies/:id
+   */
+  async delete(req, res, next) {
+    try {
+      const result = await tenancyService.deleteTenancy(parseInt(req.params.id));
+      
+      res.status(HTTP_STATUS.OK).json(
+        successResponse(result, 'Tenancy deleted successfully')
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 module.exports = tenancyController;

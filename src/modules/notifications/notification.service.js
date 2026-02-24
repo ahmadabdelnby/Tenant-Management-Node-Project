@@ -94,6 +94,7 @@ const notificationService = {
       title: 'Rent Payment Reminder',
       message: `Your rent of ${amount} KWD for ${monthNames[month]} ${year} (Unit ${unitNumber}, ${buildingName}) is due. Please make your payment.`,
       type: 'PAYMENT_REMINDER',
+      link: '/payments',
       metadata: { month, year, amount, unitNumber, buildingName },
     });
   },
@@ -111,6 +112,7 @@ const notificationService = {
       title: 'Payment Confirmed',
       message: `Your rent payment of ${amount} KWD for ${monthNames[month]} ${year} (Unit ${unitNumber}, ${buildingName}) has been confirmed. Thank you!`,
       type: 'PAYMENT',
+      link: '/payments',
       metadata: { month, year, amount, unitNumber, buildingName },
     });
   },

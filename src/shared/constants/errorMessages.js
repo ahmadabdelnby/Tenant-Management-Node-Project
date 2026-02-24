@@ -41,10 +41,6 @@ const ERROR_MESSAGES = {
   VALIDATION_ERROR: 'Validation error',
   INVALID_INPUT: 'Invalid input data',
   
-  // Rate Limiting
-  TOO_MANY_REQUESTS: 'Too many requests. Please try again later',
-  TOO_MANY_LOGIN_ATTEMPTS: 'Too many login attempts. Please try again in 15 minutes',
-  
   // Server
   INTERNAL_ERROR: 'An internal server error occurred',
   DATABASE_ERROR: 'Database operation failed',

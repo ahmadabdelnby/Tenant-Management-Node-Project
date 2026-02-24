@@ -17,6 +17,11 @@ const buildingRepository = {
   async findById(id) {
     const building = await Building.findByPk(id, {
       include: [OWNER_INCLUDE],
+      attributes: {
+        include: [
+          [literal('(SELECT COUNT(*) FROM units WHERE units.building_id = Building.id AND units.deleted_at IS NULL)'), 'total_units'],
+        ],
+      },
     });
     if (!building) return null;
     const plain = building.get({ plain: true });
@@ -100,7 +105,7 @@ const buildingRepository = {
    * Create new building
    */
   async create(buildingData) {
-    const { name, address, city, postalCode, country, ownerId } = buildingData;
+    const { name, address, city, postalCode, country, mapEmbed, ownerId } = buildingData;
 
     const building = await Building.create({
       name,
@@ -108,6 +113,7 @@ const buildingRepository = {
       city,
       postal_code: postalCode || null,
       country,
+      map_embed: mapEmbed || null,
       owner_id: ownerId,
     });
 
@@ -125,6 +131,7 @@ const buildingRepository = {
     if (buildingData.city) updateData.city = buildingData.city;
     if (buildingData.postalCode !== undefined) updateData.postal_code = buildingData.postalCode || null;
     if (buildingData.country) updateData.country = buildingData.country;
+    if (buildingData.mapEmbed !== undefined) updateData.map_embed = buildingData.mapEmbed || null;
     if (buildingData.ownerId) updateData.owner_id = buildingData.ownerId;
 
     const [affectedCount] = await Building.update(updateData, { where: { id } });

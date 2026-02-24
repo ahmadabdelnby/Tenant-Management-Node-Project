@@ -20,12 +20,13 @@ const tenancyService = {
       endDate: tenancy.end_date,
       monthlyRent: parseFloat(tenancy.monthly_rent),
       depositAmount: parseFloat(tenancy.deposit_amount),
-      isActive: tenancy.is_active === 1,
+      isActive: Boolean(tenancy.is_active),
       unit: {
         id: tenancy.unit_id,
         unitNumber: tenancy.unit_number,
         buildingId: tenancy.building_id,
         buildingName: tenancy.building_name,
+        buildingMapEmbed: tenancy.building_map_embed || null,
       },
       tenant: {
         id: tenancy.tenant_id,
@@ -146,6 +147,22 @@ const tenancyService = {
     
     await tenancyRepository.update(id, tenancyData);
     
+    // Sync unit status when isActive changes
+    if (tenancyData.isActive !== undefined) {
+      const wasActive = Boolean(tenancy.is_active);
+      const nowActive = Boolean(tenancyData.isActive);
+      
+      if (wasActive && !nowActive) {
+        // Tenancy deactivated → unit becomes AVAILABLE
+        await unitRepository.updateStatus(tenancy.unit_id, UNIT_STATUS.AVAILABLE);
+        logger.info(`Unit ${tenancy.unit_id} status changed to AVAILABLE (tenancy ${id} deactivated)`);
+      } else if (!wasActive && nowActive) {
+        // Tenancy reactivated → unit becomes RENTED
+        await unitRepository.updateStatus(tenancy.unit_id, UNIT_STATUS.RENTED);
+        logger.info(`Unit ${tenancy.unit_id} status changed to RENTED (tenancy ${id} reactivated)`);
+      }
+    }
+    
     logger.info(`Tenancy updated: ID ${id}`);
     
     return this.getTenancyById(id, { role: ROLES.ADMIN });
@@ -175,6 +192,29 @@ const tenancyService = {
     
     return { message: 'Tenancy ended successfully' };
   },
+
+  /**
+   * Delete tenancy (Admin only)
+   */
+  async deleteTenancy(id) {
+    const tenancy = await tenancyRepository.findById(id);
+
+    if (!tenancy) {
+      throw new NotFoundError(ERROR_MESSAGES.TENANCY_NOT_FOUND);
+    }
+
+    // If tenancy was active, release the unit
+    if (Boolean(tenancy.is_active)) {
+      await unitRepository.updateStatus(tenancy.unit_id, UNIT_STATUS.AVAILABLE);
+      logger.info(`Unit ${tenancy.unit_id} status changed to AVAILABLE (tenancy ${id} deleted)`);
+    }
+
+    await tenancyRepository.delete(id);
+
+    logger.info(`Tenancy deleted: ID ${id}`);
+
+    return { message: 'Tenancy deleted successfully' };
+  },
   
   /**
    * Get current user's tenancies (for Tenant role)
@@ -188,7 +228,7 @@ const tenancyService = {
       endDate: t.end_date,
       monthlyRent: parseFloat(t.monthly_rent),
       depositAmount: parseFloat(t.deposit_amount),
-      isActive: t.is_active === 1,
+      isActive: Boolean(t.is_active),
       unit: {
         id: t.unit_id,
         unitNumber: t.unit_number,

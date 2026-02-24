@@ -82,6 +82,10 @@ const updateTenancySchema = Joi.object({
       'number.base': 'Deposit amount must be a number',
       'number.min': 'Deposit amount cannot be negative',
     }),
+  isActive: Joi.boolean()
+    .messages({
+      'boolean.base': 'isActive must be a boolean',
+    }),
 }).min(1).messages({
   'object.min': 'At least one field must be provided for update',
 });

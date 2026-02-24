@@ -31,6 +31,10 @@ const Building = sequelize.define('Building', {
     type: DataTypes.STRING(100),
     allowNull: false,
   },
+  map_embed: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
 }, {
   tableName: 'buildings',
   paranoid: true,

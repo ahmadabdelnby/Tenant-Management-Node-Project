@@ -105,6 +105,16 @@ const unitService = {
     if (user.role === ROLES.OWNER && unit.owner_id !== user.id) {
       throw new AuthorizationError(ERROR_MESSAGES.FORBIDDEN);
     }
+
+    // Prevent manually setting status to RENTED (only tenancy can do that)
+    if (unitData.status === 'RENTED') {
+      throw new AppError('Unit status RENTED can only be set through tenancy management', HTTP_STATUS.BAD_REQUEST);
+    }
+
+    // If unit is currently RENTED, don't allow status change via this endpoint
+    if (unit.status === 'RENTED' && unitData.status && unitData.status !== 'RENTED') {
+      throw new AppError('Cannot change status of a rented unit. End or delete the tenancy first.', HTTP_STATUS.CONFLICT);
+    }
     
     await unitRepository.update(id, unitData);
     

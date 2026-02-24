@@ -32,12 +32,7 @@ const app = express();
 app.use(helmet());
 
 // CORS
-app.use(cors({
-  origin: config.corsOrigin,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+app.use(cors());
 
 // ============================================
 // BODY PARSING MIDDLEWARE
@@ -45,12 +40,6 @@ app.use(cors({
 
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
-
-// ============================================
-// RATE LIMITING (DISABLED)
-// ============================================
-
-// app.use('/api', apiLimiter);
 
 // ============================================
 // SWAGGER DOCUMENTATION

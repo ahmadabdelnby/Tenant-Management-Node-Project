@@ -9,7 +9,7 @@ const FULL_INCLUDE = [
     include: [{
       model: Building,
       as: 'building',
-      attributes: ['name', 'owner_id', 'address'],
+      attributes: ['name', 'owner_id', 'address', 'map_embed'],
     }],
   },
   {
@@ -27,6 +27,7 @@ function flattenTenancy(plain) {
   plain.building_id = plain.unit?.building_id || null;
   plain.building_name = plain.unit?.building?.name || null;
   plain.building_address = plain.unit?.building?.address || null;
+  plain.building_map_embed = plain.unit?.building?.map_embed || null;
   plain.owner_id = plain.unit?.building?.owner_id || null;
   plain.tenant_email = plain.tenant?.email || null;
   plain.tenant_first_name = plain.tenant?.first_name || null;
@@ -69,7 +70,7 @@ const tenancyRepository = {
       include: [{
         model: Building,
         as: 'building',
-        attributes: ['name', 'owner_id', 'address'],
+        attributes: ['name', 'owner_id', 'address', 'map_embed'],
         where: Object.keys(buildingWhere).length ? buildingWhere : undefined,
         required: Object.keys(buildingWhere).length > 0,
       }],
@@ -186,6 +187,14 @@ const tenancyRepository = {
   async findActiveByUnitId(unitId) {
     const tenancy = await Tenancy.findOne({ where: { unit_id: unitId, is_active: true } });
     return tenancy ? tenancy.get({ plain: true }) : null;
+  },
+
+  /**
+   * Delete tenancy
+   */
+  async delete(id) {
+    const affectedCount = await Tenancy.destroy({ where: { id } });
+    return affectedCount > 0;
   },
 
   /**

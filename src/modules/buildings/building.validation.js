@@ -47,6 +47,13 @@ const createBuildingSchema = Joi.object({
       'string.max': 'Country cannot exceed 100 characters',
       'any.required': 'Country is required',
     }),
+  mapEmbed: Joi.string()
+    .max(2000)
+    .allow('', null)
+    .optional()
+    .messages({
+      'string.max': 'Map embed code cannot exceed 2000 characters',
+    }),
   ownerId: Joi.number()
     .integer()
     .positive()
@@ -96,6 +103,13 @@ const updateBuildingSchema = Joi.object({
     .messages({
       'string.min': 'Country must be at least 2 characters',
       'string.max': 'Country cannot exceed 100 characters',
+    }),
+  mapEmbed: Joi.string()
+    .max(2000)
+    .allow('', null)
+    .optional()
+    .messages({
+      'string.max': 'Map embed code cannot exceed 2000 characters',
     }),
   ownerId: Joi.number()
     .integer()

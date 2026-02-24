@@ -40,7 +40,7 @@ const Unit = sequelize.define('Unit', {
     allowNull: true,
   },
   status: {
-    type: DataTypes.ENUM('AVAILABLE', 'RENTED'),
+    type: DataTypes.ENUM('AVAILABLE', 'RENTED', 'UNAVAILABLE'),
     defaultValue: 'AVAILABLE',
   },
 }, {

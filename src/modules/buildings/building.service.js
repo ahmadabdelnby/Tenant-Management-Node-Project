@@ -20,6 +20,7 @@ const buildingService = {
       city: building.city,
       postalCode: building.postal_code,
       country: building.country,
+      mapEmbed: building.map_embed || null,
       totalUnits: building.total_units || 0,
       owner: building.owner_id ? {
         id: building.owner_id,
@@ -66,6 +67,18 @@ const buildingService = {
     // Check ownership for non-admin users
     if (user.role === ROLES.OWNER && building.owner_id !== user.id) {
       throw new AuthorizationError(ERROR_MESSAGES.FORBIDDEN);
+    }
+
+    // Tenants can view the building if they have an active tenancy in it
+    if (user.role === ROLES.TENANT) {
+      const { Tenancy, Unit } = require('../../models');
+      const tenancy = await Tenancy.findOne({
+        where: { tenant_id: user.id, is_active: true },
+        include: [{ model: Unit, as: 'unit', where: { building_id: id }, attributes: ['id'] }],
+      });
+      if (!tenancy) {
+        throw new AuthorizationError(ERROR_MESSAGES.FORBIDDEN);
+      }
     }
     
     return this.formatBuilding(building);
