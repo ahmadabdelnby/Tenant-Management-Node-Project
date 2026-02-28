@@ -31,6 +31,8 @@ const maintenanceService = {
         unitNumber: request.unit_number,
         buildingId: request.building_id,
         buildingName: request.building_name,
+        buildingNameEn: request.building_name_en,
+        buildingNameAr: request.building_name_ar,
       },
       tenant: {
         id: request.tenant_id,

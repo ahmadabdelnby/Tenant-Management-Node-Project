@@ -32,6 +32,8 @@ const paymentService = {
         unitNumber: payment.unit_number,
         buildingId: payment.building_id,
         buildingName: payment.building_name,
+        buildingNameEn: payment.building_name_en,
+        buildingNameAr: payment.building_name_ar,
       },
       tenant: {
         id: payment.tenant_id,

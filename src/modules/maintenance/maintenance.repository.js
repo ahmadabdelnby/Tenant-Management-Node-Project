@@ -9,7 +9,7 @@ const FIND_INCLUDE = [
     include: [{
       model: Building,
       as: 'building',
-      attributes: ['name', 'owner_id'],
+      attributes: ['name_en', 'name_ar', 'owner_id'],
     }],
   },
   {
@@ -34,7 +34,9 @@ const FIND_BY_ID_INCLUDE = [
 function flattenMR(plain, includeResolver = false) {
   plain.unit_number = plain.unit?.unit_number || null;
   plain.building_id = plain.unit?.building_id || null;
-  plain.building_name = plain.unit?.building?.name || null;
+  plain.building_name = plain.unit?.building?.name_en || null;
+  plain.building_name_en = plain.unit?.building?.name_en || null;
+  plain.building_name_ar = plain.unit?.building?.name_ar || null;
   plain.owner_id = plain.unit?.building?.owner_id || null;
   plain.tenant_email = plain.tenant?.email || null;
   plain.tenant_first_name = plain.tenant?.first_name || null;
@@ -84,7 +86,7 @@ const maintenanceRepository = {
       include: [{
         model: Building,
         as: 'building',
-        attributes: ['name', 'owner_id'],
+        attributes: ['name_en', 'name_ar', 'owner_id'],
         where: Object.keys(buildingWhere).length ? buildingWhere : undefined,
         required: Object.keys(buildingWhere).length > 0,
       }],
@@ -214,7 +216,7 @@ const maintenanceRepository = {
         include: [{
           model: Building,
           as: 'building',
-          attributes: ['name'],
+          attributes: ['name_en', 'name_ar'],
         }],
       }],
     });
@@ -223,7 +225,9 @@ const maintenanceRepository = {
     return {
       unit_id: plain.unit_id,
       unit_number: plain.unit?.unit_number || null,
-      building_name: plain.unit?.building?.name || null,
+      building_name: plain.unit?.building?.name_en || null,
+      building_name_en: plain.unit?.building?.name_en || null,
+      building_name_ar: plain.unit?.building?.name_ar || null,
     };
   },
 
@@ -240,10 +244,10 @@ const maintenanceRepository = {
         include: [{
           model: Building,
           as: 'building',
-          attributes: ['id', 'name', 'address'],
+          attributes: ['id', 'name_en', 'name_ar', 'address'],
         }],
       }],
-      order: [[{ model: Unit, as: 'unit' }, { model: Building, as: 'building' }, 'name', 'ASC']],
+      order: [[{ model: Unit, as: 'unit' }, { model: Building, as: 'building' }, 'name_en', 'ASC']],
     });
 
     return rows.map(t => {
@@ -256,7 +260,9 @@ const maintenanceRepository = {
         bedrooms: plain.unit?.bedrooms || null,
         bathrooms: plain.unit?.bathrooms || null,
         building_id: plain.unit?.building?.id || null,
-        building_name: plain.unit?.building?.name || null,
+        building_name: plain.unit?.building?.name_en || null,
+        building_name_en: plain.unit?.building?.name_en || null,
+        building_name_ar: plain.unit?.building?.name_ar || null,
         building_address: plain.unit?.building?.address || null,
       };
     });
@@ -300,7 +306,7 @@ const maintenanceRepository = {
       include: [{
         model: Building,
         as: 'building',
-        attributes: ['name', 'owner_id'],
+        attributes: ['name_en', 'name_ar', 'owner_id'],
         where: Object.keys(buildingWhere).length ? buildingWhere : undefined,
         required: Object.keys(buildingWhere).length > 0,
       }],
@@ -327,7 +333,7 @@ const maintenanceRepository = {
         },
       ],
       order: [
-        [{ model: Unit, as: 'unit' }, { model: Building, as: 'building' }, 'name', 'ASC'],
+        [{ model: Unit, as: 'unit' }, { model: Building, as: 'building' }, 'name_en', 'ASC'],
         [{ model: Unit, as: 'unit' }, 'unit_number', 'ASC'],
         ['created_at', 'DESC'],
       ],
@@ -337,7 +343,9 @@ const maintenanceRepository = {
       const plain = r.get({ plain: true });
       plain.unit_number = plain.unit?.unit_number || null;
       plain.building_id = plain.unit?.building_id || null;
-      plain.building_name = plain.unit?.building?.name || null;
+      plain.building_name = plain.unit?.building?.name_en || null;
+      plain.building_name_en = plain.unit?.building?.name_en || null;
+      plain.building_name_ar = plain.unit?.building?.name_ar || null;
       plain.owner_id = plain.unit?.building?.owner_id || null;
       plain.tenant_email = plain.tenant?.email || null;
       plain.tenant_first_name = plain.tenant?.first_name || null;

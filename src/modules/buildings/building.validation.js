@@ -4,14 +4,23 @@ const Joi = require('joi');
  * Create building validation schema
  */
 const createBuildingSchema = Joi.object({
-  name: Joi.string()
+  nameEn: Joi.string()
     .min(2)
     .max(100)
     .required()
     .messages({
-      'string.min': 'Building name must be at least 2 characters',
-      'string.max': 'Building name cannot exceed 100 characters',
-      'any.required': 'Building name is required',
+      'string.min': 'Building name (English) must be at least 2 characters',
+      'string.max': 'Building name (English) cannot exceed 100 characters',
+      'any.required': 'Building name (English) is required',
+    }),
+  nameAr: Joi.string()
+    .min(2)
+    .max(100)
+    .required()
+    .messages({
+      'string.min': 'Building name (Arabic) must be at least 2 characters',
+      'string.max': 'Building name (Arabic) cannot exceed 100 characters',
+      'any.required': 'Building name (Arabic) is required',
     }),
   address: Joi.string()
     .min(5)
@@ -54,6 +63,38 @@ const createBuildingSchema = Joi.object({
     .messages({
       'string.max': 'Map embed code cannot exceed 2000 characters',
     }),
+  descriptionEn: Joi.string()
+    .max(2000)
+    .allow('', null)
+    .optional()
+    .messages({
+      'string.max': 'Description (English) cannot exceed 2000 characters',
+    }),
+  descriptionAr: Joi.string()
+    .max(2000)
+    .allow('', null)
+    .optional()
+    .messages({
+      'string.max': 'Description (Arabic) cannot exceed 2000 characters',
+    }),
+  latitude: Joi.number()
+    .min(-90)
+    .max(90)
+    .allow(null)
+    .optional()
+    .messages({
+      'number.min': 'Latitude must be between -90 and 90',
+      'number.max': 'Latitude must be between -90 and 90',
+    }),
+  longitude: Joi.number()
+    .min(-180)
+    .max(180)
+    .allow(null)
+    .optional()
+    .messages({
+      'number.min': 'Longitude must be between -180 and 180',
+      'number.max': 'Longitude must be between -180 and 180',
+    }),
   ownerId: Joi.number()
     .integer()
     .positive()
@@ -70,12 +111,19 @@ const createBuildingSchema = Joi.object({
  * Update building validation schema
  */
 const updateBuildingSchema = Joi.object({
-  name: Joi.string()
+  nameEn: Joi.string()
     .min(2)
     .max(100)
     .messages({
-      'string.min': 'Building name must be at least 2 characters',
-      'string.max': 'Building name cannot exceed 100 characters',
+      'string.min': 'Building name (English) must be at least 2 characters',
+      'string.max': 'Building name (English) cannot exceed 100 characters',
+    }),
+  nameAr: Joi.string()
+    .min(2)
+    .max(100)
+    .messages({
+      'string.min': 'Building name (Arabic) must be at least 2 characters',
+      'string.max': 'Building name (Arabic) cannot exceed 100 characters',
     }),
   address: Joi.string()
     .min(5)
@@ -110,6 +158,38 @@ const updateBuildingSchema = Joi.object({
     .optional()
     .messages({
       'string.max': 'Map embed code cannot exceed 2000 characters',
+    }),
+  descriptionEn: Joi.string()
+    .max(2000)
+    .allow('', null)
+    .optional()
+    .messages({
+      'string.max': 'Description (English) cannot exceed 2000 characters',
+    }),
+  descriptionAr: Joi.string()
+    .max(2000)
+    .allow('', null)
+    .optional()
+    .messages({
+      'string.max': 'Description (Arabic) cannot exceed 2000 characters',
+    }),
+  latitude: Joi.number()
+    .min(-90)
+    .max(90)
+    .allow(null)
+    .optional()
+    .messages({
+      'number.min': 'Latitude must be between -90 and 90',
+      'number.max': 'Latitude must be between -90 and 90',
+    }),
+  longitude: Joi.number()
+    .min(-180)
+    .max(180)
+    .allow(null)
+    .optional()
+    .messages({
+      'number.min': 'Longitude must be between -180 and 180',
+      'number.max': 'Longitude must be between -180 and 180',
     }),
   ownerId: Joi.number()
     .integer()

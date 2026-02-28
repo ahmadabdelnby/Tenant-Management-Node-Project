@@ -15,12 +15,17 @@ const buildingService = {
   formatBuilding(building) {
     return {
       id: building.id,
-      name: building.name,
+      nameEn: building.name_en,
+      nameAr: building.name_ar,
       address: building.address,
       city: building.city,
       postalCode: building.postal_code,
       country: building.country,
+      descriptionEn: building.description_en || null,
+      descriptionAr: building.description_ar || null,
       mapEmbed: building.map_embed || null,
+      latitude: building.latitude ? parseFloat(building.latitude) : null,
+      longitude: building.longitude ? parseFloat(building.longitude) : null,
       totalUnits: building.total_units || 0,
       owner: building.owner_id ? {
         id: building.owner_id,
@@ -99,7 +104,7 @@ const buildingService = {
     
     const buildingId = await buildingRepository.create(buildingData);
     
-    logger.info(`Building created: ${buildingData.name} with ID: ${buildingId}`);
+    logger.info(`Building created: ${buildingData.nameEn} with ID: ${buildingId}`);
     
     return this.getBuildingById(buildingId, { role: ROLES.ADMIN });
   },

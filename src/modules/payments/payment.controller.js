@@ -1,7 +1,10 @@
 const paymentService = require('./payment.service');
+const tahseeelService = require('./tahseeel.service');
+const { PaymentLink } = require('../../models');
 const { successResponse, createdResponse } = require('../../shared/utils/responseFormatter');
 const { HTTP_STATUS } = require('../../shared/constants');
 const { parsePaginationParams } = require('../../shared/utils/paginationHelper');
+const logger = require('../../shared/utils/logger');
 
 /**
  * Payment Controller
@@ -180,6 +183,116 @@ const paymentController = {
 
       await workbook.xlsx.write(res);
       res.end();
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Generate a standalone Tahseeel payment link
+   * POST /api/payments/generate-link
+   */
+  async generateLink(req, res, next) {
+    try {
+      const { name, amount } = req.body;
+
+      if (!name || !amount) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          message: 'name and amount are required',
+        });
+      }
+
+      const parsedAmount = parseFloat(amount);
+      if (isNaN(parsedAmount) || parsedAmount <= 0) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          message: 'amount must be a positive number',
+        });
+      }
+
+      // Generate unique order number
+      const orderNo = `PL-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+      // Call Tahseeel API
+      const result = await tahseeelService.createOrder({
+        orderNo,
+        amount: parsedAmount,
+        customerName: name,
+        customerEmail: '',
+        customerMobile: '',
+      });
+
+      if (!result.success) {
+        logger.error('Generate link Tahseeel error:', result.error);
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          message: result.error || 'Failed to generate payment link',
+        });
+      }
+
+      // Save to PaymentLink table
+      await PaymentLink.create({
+        order_no: orderNo,
+        cust_name: name,
+        amount: parsedAmount,
+        payment_url: result.link,
+        status: 'Pending',
+        created_by: req.user.id,
+      });
+
+      logger.info(`Payment link generated: ${orderNo} for ${name}, amount: ${parsedAmount}`);
+
+      res.status(HTTP_STATUS.CREATED).json({
+        success: true,
+        data: {
+          orderNo,
+          link: result.link,
+          name,
+          amount: parsedAmount,
+        },
+        message: 'Payment link generated successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Get all generated payment links (history)
+   * GET /api/payments/payment-links
+   */
+  async getPaymentLinks(req, res, next) {
+    try {
+      const { page = 1, limit = 20, status } = req.query;
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+
+      const where = {};
+      if (status) {
+        where.status = status;
+      }
+
+      const { count, rows } = await PaymentLink.findAndCountAll({
+        where,
+        order: [['created_at', 'DESC']],
+        limit: parseInt(limit),
+        offset,
+      });
+
+      res.status(HTTP_STATUS.OK).json(
+        successResponse(
+          {
+            data: rows,
+            pagination: {
+              total: count,
+              page: parseInt(page),
+              limit: parseInt(limit),
+              totalPages: Math.ceil(count / parseInt(limit)),
+            },
+          },
+          'Payment links retrieved successfully'
+        )
+      );
     } catch (error) {
       next(error);
     }

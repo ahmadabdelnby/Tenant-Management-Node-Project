@@ -9,7 +9,7 @@ const FULL_INCLUDE = [
     include: [{
       model: Building,
       as: 'building',
-      attributes: ['name', 'owner_id', 'address', 'map_embed'],
+      attributes: ['name_en', 'name_ar', 'owner_id', 'address', 'map_embed'],
     }],
   },
   {
@@ -25,7 +25,9 @@ const FULL_INCLUDE = [
 function flattenTenancy(plain) {
   plain.unit_number = plain.unit?.unit_number || null;
   plain.building_id = plain.unit?.building_id || null;
-  plain.building_name = plain.unit?.building?.name || null;
+  plain.building_name = plain.unit?.building?.name_en || null;
+  plain.building_name_en = plain.unit?.building?.name_en || null;
+  plain.building_name_ar = plain.unit?.building?.name_ar || null;
   plain.building_address = plain.unit?.building?.address || null;
   plain.building_map_embed = plain.unit?.building?.map_embed || null;
   plain.owner_id = plain.unit?.building?.owner_id || null;
@@ -70,7 +72,7 @@ const tenancyRepository = {
       include: [{
         model: Building,
         as: 'building',
-        attributes: ['name', 'owner_id', 'address', 'map_embed'],
+        attributes: ['name_en', 'name_ar', 'owner_id', 'address', 'map_embed'],
         where: Object.keys(buildingWhere).length ? buildingWhere : undefined,
         required: Object.keys(buildingWhere).length > 0,
       }],
@@ -210,7 +212,7 @@ const tenancyRepository = {
         include: [{
           model: Building,
           as: 'building',
-          attributes: ['name', 'address'],
+          attributes: ['name_en', 'name_ar', 'address'],
         }],
       }],
       order: [['created_at', 'DESC']],
@@ -220,7 +222,9 @@ const tenancyRepository = {
       const plain = t.get({ plain: true });
       plain.unit_number = plain.unit?.unit_number || null;
       plain.building_id = plain.unit?.building_id || null;
-      plain.building_name = plain.unit?.building?.name || null;
+      plain.building_name = plain.unit?.building?.name_en || null;
+      plain.building_name_en = plain.unit?.building?.name_en || null;
+      plain.building_name_ar = plain.unit?.building?.name_ar || null;
       plain.building_address = plain.unit?.building?.address || null;
       delete plain.unit;
       return plain;

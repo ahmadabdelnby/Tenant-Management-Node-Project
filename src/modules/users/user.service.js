@@ -29,7 +29,7 @@ const userService = {
       lastName: user.last_name,
       phone: user.phone,
       role: user.role,
-      isActive: user.is_active === 1,
+      isActive: Boolean(user.is_active),
       createdAt: user.created_at,
       updatedAt: user.updated_at,
     }));
@@ -54,7 +54,7 @@ const userService = {
       lastName: user.last_name,
       phone: user.phone,
       role: user.role,
-      isActive: user.is_active === 1,
+      isActive: Boolean(user.is_active),
       createdAt: user.created_at,
       updatedAt: user.updated_at,
     };

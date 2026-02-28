@@ -14,7 +14,7 @@ const FULL_INCLUDE = [
         include: [{
           model: Building,
           as: 'building',
-          attributes: ['name', 'owner_id'],
+          attributes: ['name_en', 'name_ar', 'owner_id'],
         }],
       },
       {
@@ -39,7 +39,9 @@ function flattenPayment(plain) {
   plain.is_active = tenancy.is_active !== undefined ? tenancy.is_active : null;
   plain.unit_number = tenancy.unit?.unit_number || null;
   plain.building_id = tenancy.unit?.building_id || null;
-  plain.building_name = tenancy.unit?.building?.name || null;
+  plain.building_name = tenancy.unit?.building?.name_en || null;
+  plain.building_name_en = tenancy.unit?.building?.name_en || null;
+  plain.building_name_ar = tenancy.unit?.building?.name_ar || null;
   plain.owner_id = tenancy.unit?.building?.owner_id || null;
   plain.tenant_email = tenancy.tenant?.email || null;
   plain.tenant_first_name = tenancy.tenant?.first_name || null;
@@ -103,7 +105,7 @@ const paymentRepository = {
           include: [{
             model: Building,
             as: 'building',
-            attributes: ['name', 'owner_id'],
+            attributes: ['name_en', 'name_ar', 'owner_id'],
             where: Object.keys(buildingWhere).length ? buildingWhere : undefined,
             required: Object.keys(buildingWhere).length > 0,
           }],
@@ -357,7 +359,7 @@ const paymentRepository = {
           include: [{
             model: Building,
             as: 'building',
-            attributes: ['name'],
+            attributes: ['name_en', 'name_ar'],
             where: Object.keys(buildingWhere).length ? buildingWhere : undefined,
             required: Object.keys(buildingWhere).length > 0,
           }],
@@ -392,7 +394,9 @@ const paymentRepository = {
       plain.end_date = tenancy.end_date || null;
       plain.unit_number = tenancy.unit?.unit_number || null;
       plain.building_id = tenancy.unit?.building_id || null;
-      plain.building_name = tenancy.unit?.building?.name || null;
+      plain.building_name = tenancy.unit?.building?.name_en || null;
+      plain.building_name_en = tenancy.unit?.building?.name_en || null;
+      plain.building_name_ar = tenancy.unit?.building?.name_ar || null;
       plain.tenant_email = tenancy.tenant?.email || null;
       plain.tenant_first_name = tenancy.tenant?.first_name || null;
       plain.tenant_last_name = tenancy.tenant?.last_name || null;

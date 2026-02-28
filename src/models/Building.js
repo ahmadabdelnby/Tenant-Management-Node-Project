@@ -11,7 +11,11 @@ const Building = sequelize.define('Building', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  name: {
+  name_en: {
+    type: DataTypes.STRING(100),
+    allowNull: false,
+  },
+  name_ar: {
     type: DataTypes.STRING(100),
     allowNull: false,
   },
@@ -31,8 +35,24 @@ const Building = sequelize.define('Building', {
     type: DataTypes.STRING(100),
     allowNull: false,
   },
+  description_en: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  description_ar: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   map_embed: {
     type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  latitude: {
+    type: DataTypes.DECIMAL(10, 8),
+    allowNull: true,
+  },
+  longitude: {
+    type: DataTypes.DECIMAL(11, 8),
     allowNull: true,
   },
 }, {

@@ -12,6 +12,30 @@ const { authenticate, isAdmin, isAdminOrOwner, isAuthenticated, validate, auditL
 router.get('/tahseeel/callback', paymentController.tahseeelCallback);
 
 /**
+ * @route   POST /api/payments/generate-link
+ * @desc    Generate a standalone Tahseeel payment link (name + amount)
+ * @access  Admin, Owner
+ */
+router.post(
+  '/generate-link',
+  authenticate,
+  isAdminOrOwner,
+  paymentController.generateLink
+);
+
+/**
+ * @route   GET /api/payments/payment-links
+ * @desc    Get all generated payment links (history)
+ * @access  Admin, Owner
+ */
+router.get(
+  '/payment-links',
+  authenticate,
+  isAdminOrOwner,
+  paymentController.getPaymentLinks
+);
+
+/**
  * @route   GET /api/payments/export
  * @desc    Export payments to Excel
  * @access  Admin, Owner

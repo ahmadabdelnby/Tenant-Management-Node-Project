@@ -48,7 +48,8 @@ const buildingRepository = {
     if (filters.search) {
       const searchTerm = `%${filters.search}%`;
       where[Op.or] = [
-        { name: { [Op.like]: searchTerm } },
+        { name_en: { [Op.like]: searchTerm } },
+        { name_ar: { [Op.like]: searchTerm } },
         { address: { [Op.like]: searchTerm } },
         { city: { [Op.like]: searchTerm } },
       ];
@@ -92,7 +93,8 @@ const buildingRepository = {
     if (filters.search) {
       const searchTerm = `%${filters.search}%`;
       where[Op.or] = [
-        { name: { [Op.like]: searchTerm } },
+        { name_en: { [Op.like]: searchTerm } },
+        { name_ar: { [Op.like]: searchTerm } },
         { address: { [Op.like]: searchTerm } },
         { city: { [Op.like]: searchTerm } },
       ];
@@ -105,16 +107,21 @@ const buildingRepository = {
    * Create new building
    */
   async create(buildingData) {
-    const { name, address, city, postalCode, country, mapEmbed, ownerId } = buildingData;
+    const { nameEn, nameAr, address, city, postalCode, country, mapEmbed, ownerId, latitude, longitude, descriptionEn, descriptionAr } = buildingData;
 
     const building = await Building.create({
-      name,
+      name_en: nameEn,
+      name_ar: nameAr,
       address,
       city,
       postal_code: postalCode || null,
       country,
       map_embed: mapEmbed || null,
       owner_id: ownerId,
+      latitude: latitude || null,
+      longitude: longitude || null,
+      description_en: descriptionEn || null,
+      description_ar: descriptionAr || null,
     });
 
     return building.id;
@@ -126,13 +133,18 @@ const buildingRepository = {
   async update(id, buildingData) {
     const updateData = {};
 
-    if (buildingData.name) updateData.name = buildingData.name;
+    if (buildingData.nameEn) updateData.name_en = buildingData.nameEn;
+    if (buildingData.nameAr) updateData.name_ar = buildingData.nameAr;
     if (buildingData.address) updateData.address = buildingData.address;
     if (buildingData.city) updateData.city = buildingData.city;
     if (buildingData.postalCode !== undefined) updateData.postal_code = buildingData.postalCode || null;
     if (buildingData.country) updateData.country = buildingData.country;
     if (buildingData.mapEmbed !== undefined) updateData.map_embed = buildingData.mapEmbed || null;
     if (buildingData.ownerId) updateData.owner_id = buildingData.ownerId;
+    if (buildingData.latitude !== undefined) updateData.latitude = buildingData.latitude || null;
+    if (buildingData.longitude !== undefined) updateData.longitude = buildingData.longitude || null;
+    if (buildingData.descriptionEn !== undefined) updateData.description_en = buildingData.descriptionEn || null;
+    if (buildingData.descriptionAr !== undefined) updateData.description_ar = buildingData.descriptionAr || null;
 
     const [affectedCount] = await Building.update(updateData, { where: { id } });
     return affectedCount > 0;

@@ -5,6 +5,7 @@ const Unit = require('./Unit');
 const Tenancy = require('./Tenancy');
 const MaintenanceRequest = require('./MaintenanceRequest');
 const Payment = require('./Payment');
+const PaymentLink = require('./PaymentLink');
 const Notification = require('./Notification');
 const TokenBlacklist = require('./TokenBlacklist');
 const AuditLog = require('./AuditLog');
@@ -66,6 +67,7 @@ module.exports = {
   Tenancy,
   MaintenanceRequest,
   Payment,
+  PaymentLink,
   Notification,
   TokenBlacklist,
   AuditLog,

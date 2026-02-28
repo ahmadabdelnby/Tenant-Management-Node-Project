@@ -5,7 +5,7 @@ const { UNIT_STATUS } = require('../../shared/constants');
 const BUILDING_INCLUDE = {
   model: Building,
   as: 'building',
-  attributes: ['name', 'address', 'owner_id'],
+  attributes: ['name_en', 'name_ar', 'address', 'owner_id'],
 };
 
 /**
@@ -21,7 +21,9 @@ const unitRepository = {
     });
     if (!unit) return null;
     const plain = unit.get({ plain: true });
-    plain.building_name = plain.building?.name || null;
+    plain.building_name = plain.building?.name_en || null;
+    plain.building_name_en = plain.building?.name_en || null;
+    plain.building_name_ar = plain.building?.name_ar || null;
     plain.building_address = plain.building?.address || null;
     plain.owner_id = plain.building?.owner_id || null;
     delete plain.building;
@@ -56,7 +58,7 @@ const unitRepository = {
       include: [{
         model: Building,
         as: 'building',
-        attributes: ['name', 'address', 'owner_id'],
+        attributes: ['name_en', 'name_ar', 'address', 'owner_id'],
         where: Object.keys(buildingWhere).length ? buildingWhere : undefined,
         required: Object.keys(buildingWhere).length > 0,
       }],
@@ -67,7 +69,9 @@ const unitRepository = {
 
     return rows.map(u => {
       const plain = u.get({ plain: true });
-      plain.building_name = plain.building?.name || null;
+      plain.building_name = plain.building?.name_en || null;
+      plain.building_name_en = plain.building?.name_en || null;
+      plain.building_name_ar = plain.building?.name_ar || null;
       plain.building_address = plain.building?.address || null;
       plain.owner_id = plain.building?.owner_id || null;
       delete plain.building;
