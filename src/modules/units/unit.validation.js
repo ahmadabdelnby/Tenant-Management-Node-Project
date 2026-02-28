@@ -16,6 +16,7 @@ const createUnitSchema = Joi.object({
       'any.required': 'Building ID is required',
     }),
   unitNumber: Joi.string()
+    .trim()
     .min(1)
     .max(20)
     .required()
@@ -96,6 +97,7 @@ const updateUnitSchema = Joi.object({
       'number.positive': 'Building ID must be a positive number',
     }),
   unitNumber: Joi.string()
+    .trim()
     .min(1)
     .max(20)
     .messages({

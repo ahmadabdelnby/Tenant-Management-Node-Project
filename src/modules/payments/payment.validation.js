@@ -23,7 +23,7 @@ const updatePaymentSchema = Joi.object({
     .messages({ 'any.only': `Payment method must be one of: ${PAYMENT_METHODS.join(', ')}` }),
   amount: Joi.number().positive()
     .messages({ 'number.positive': 'Amount must be positive' }),
-  notes: Joi.string().max(1000).allow('', null),
+  notes: Joi.string().trim().max(1000).allow('', null),
   paidAt: Joi.date().iso().allow(null),
 }).min(1).messages({
   'object.min': 'At least one field must be provided for update',

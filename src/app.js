@@ -1,12 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const hpp = require('hpp');
 const swaggerUi = require('swagger-ui-express');
 const config = require('./config');
 const swaggerSpec = require('./config/swagger');
 
 // Import middleware
 const { errorHandler, notFoundHandler } = require('./middleware');
+const xssSanitize = require('./middleware/xssSanitize.middleware');
 
 // Import routes
 const { authRoutes } = require('./modules/auth');
@@ -40,6 +42,12 @@ app.use(cors());
 
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+// HPP - Protect against HTTP Parameter Pollution
+app.use(hpp());
+
+// XSS Sanitization - Clean user input
+app.use(xssSanitize);
 
 // ============================================
 // SWAGGER DOCUMENTATION

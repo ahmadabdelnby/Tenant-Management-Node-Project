@@ -3,6 +3,7 @@ const { authorize, isAdmin, isAdminOrOwner, isAuthenticated } = require('./rbac.
 const validate = require('./validation.middleware');
 const auditLog = require('./audit.middleware');
 const { errorHandler, notFoundHandler } = require('./errorHandler.middleware');
+const xssSanitize = require('./xssSanitize.middleware');
 
 module.exports = {
   authenticate,
@@ -14,4 +15,5 @@ module.exports = {
   auditLog,
   errorHandler,
   notFoundHandler,
+  xssSanitize,
 };

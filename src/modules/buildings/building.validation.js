@@ -1,10 +1,14 @@
 const Joi = require('joi');
 
+// Only allow Google Maps embed URLs
+const MAP_EMBED_PATTERN = /^https:\/\/(www\.)?google\.com\/maps\/embed/;
+
 /**
  * Create building validation schema
  */
 const createBuildingSchema = Joi.object({
   nameEn: Joi.string()
+    .trim()
     .min(2)
     .max(100)
     .required()
@@ -14,6 +18,7 @@ const createBuildingSchema = Joi.object({
       'any.required': 'Building name (English) is required',
     }),
   nameAr: Joi.string()
+    .trim()
     .min(2)
     .max(100)
     .required()
@@ -23,6 +28,7 @@ const createBuildingSchema = Joi.object({
       'any.required': 'Building name (Arabic) is required',
     }),
   address: Joi.string()
+    .trim()
     .min(5)
     .max(255)
     .required()
@@ -32,6 +38,7 @@ const createBuildingSchema = Joi.object({
       'any.required': 'Address is required',
     }),
   city: Joi.string()
+    .trim()
     .min(2)
     .max(100)
     .required()
@@ -41,6 +48,7 @@ const createBuildingSchema = Joi.object({
       'any.required': 'City is required',
     }),
   postalCode: Joi.string()
+    .trim()
     .max(20)
     .allow('')
     .optional()
@@ -48,6 +56,7 @@ const createBuildingSchema = Joi.object({
       'string.max': 'Postal code cannot exceed 20 characters',
     }),
   country: Joi.string()
+    .trim()
     .min(2)
     .max(100)
     .required()
@@ -57,13 +66,17 @@ const createBuildingSchema = Joi.object({
       'any.required': 'Country is required',
     }),
   mapEmbed: Joi.string()
+    .trim()
     .max(2000)
+    .pattern(MAP_EMBED_PATTERN)
     .allow('', null)
     .optional()
     .messages({
       'string.max': 'Map embed code cannot exceed 2000 characters',
+      'string.pattern.base': 'Map embed must be a valid Google Maps embed URL (https://www.google.com/maps/embed...)',
     }),
   descriptionEn: Joi.string()
+    .trim()
     .max(2000)
     .allow('', null)
     .optional()
@@ -71,6 +84,7 @@ const createBuildingSchema = Joi.object({
       'string.max': 'Description (English) cannot exceed 2000 characters',
     }),
   descriptionAr: Joi.string()
+    .trim()
     .max(2000)
     .allow('', null)
     .optional()
@@ -112,6 +126,7 @@ const createBuildingSchema = Joi.object({
  */
 const updateBuildingSchema = Joi.object({
   nameEn: Joi.string()
+    .trim()
     .min(2)
     .max(100)
     .messages({
@@ -119,6 +134,7 @@ const updateBuildingSchema = Joi.object({
       'string.max': 'Building name (English) cannot exceed 100 characters',
     }),
   nameAr: Joi.string()
+    .trim()
     .min(2)
     .max(100)
     .messages({
@@ -126,6 +142,7 @@ const updateBuildingSchema = Joi.object({
       'string.max': 'Building name (Arabic) cannot exceed 100 characters',
     }),
   address: Joi.string()
+    .trim()
     .min(5)
     .max(255)
     .messages({
@@ -133,6 +150,7 @@ const updateBuildingSchema = Joi.object({
       'string.max': 'Address cannot exceed 255 characters',
     }),
   city: Joi.string()
+    .trim()
     .min(2)
     .max(100)
     .messages({
@@ -140,12 +158,14 @@ const updateBuildingSchema = Joi.object({
       'string.max': 'City cannot exceed 100 characters',
     }),
   postalCode: Joi.string()
+    .trim()
     .max(20)
     .allow('')
     .messages({
       'string.max': 'Postal code cannot exceed 20 characters',
     }),
   country: Joi.string()
+    .trim()
     .min(2)
     .max(100)
     .messages({
@@ -153,13 +173,17 @@ const updateBuildingSchema = Joi.object({
       'string.max': 'Country cannot exceed 100 characters',
     }),
   mapEmbed: Joi.string()
+    .trim()
     .max(2000)
+    .pattern(MAP_EMBED_PATTERN)
     .allow('', null)
     .optional()
     .messages({
       'string.max': 'Map embed code cannot exceed 2000 characters',
+      'string.pattern.base': 'Map embed must be a valid Google Maps embed URL (https://www.google.com/maps/embed...)',
     }),
   descriptionEn: Joi.string()
+    .trim()
     .max(2000)
     .allow('', null)
     .optional()
@@ -167,6 +191,7 @@ const updateBuildingSchema = Joi.object({
       'string.max': 'Description (English) cannot exceed 2000 characters',
     }),
   descriptionAr: Joi.string()
+    .trim()
     .max(2000)
     .allow('', null)
     .optional()

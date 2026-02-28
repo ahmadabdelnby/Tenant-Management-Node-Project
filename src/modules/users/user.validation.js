@@ -1,11 +1,16 @@
 const Joi = require('joi');
 const { ROLES_ARRAY } = require('../../shared/constants');
 
+// Password pattern: at least one uppercase, one lowercase, one digit
+const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+const PASSWORD_MESSAGE = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
+
 /**
  * Create user validation schema
  */
 const createUserSchema = Joi.object({
   email: Joi.string()
+    .trim()
     .email()
     .required()
     .messages({
@@ -13,14 +18,17 @@ const createUserSchema = Joi.object({
       'any.required': 'Email is required',
     }),
   password: Joi.string()
-    .min(6)
+    .min(8)
     .max(100)
+    .pattern(PASSWORD_PATTERN)
     .optional()
     .messages({
-      'string.min': 'Password must be at least 6 characters',
+      'string.min': 'Password must be at least 8 characters',
       'string.max': 'Password cannot exceed 100 characters',
+      'string.pattern.base': PASSWORD_MESSAGE,
     }),
   firstName: Joi.string()
+    .trim()
     .min(2)
     .max(50)
     .required()
@@ -30,6 +38,7 @@ const createUserSchema = Joi.object({
       'any.required': 'First name is required',
     }),
   lastName: Joi.string()
+    .trim()
     .min(2)
     .max(50)
     .required()
@@ -39,6 +48,7 @@ const createUserSchema = Joi.object({
       'any.required': 'Last name is required',
     }),
   role: Joi.string()
+    .trim()
     .valid(...ROLES_ARRAY)
     .required()
     .messages({
@@ -46,6 +56,7 @@ const createUserSchema = Joi.object({
       'any.required': 'Role is required',
     }),
   phone: Joi.string()
+    .trim()
     .max(20)
     .allow('', null)
     .optional()
@@ -59,11 +70,13 @@ const createUserSchema = Joi.object({
  */
 const updateUserSchema = Joi.object({
   email: Joi.string()
+    .trim()
     .email()
     .messages({
       'string.email': 'Please provide a valid email address',
     }),
   firstName: Joi.string()
+    .trim()
     .min(2)
     .max(50)
     .messages({
@@ -71,6 +84,7 @@ const updateUserSchema = Joi.object({
       'string.max': 'First name cannot exceed 50 characters',
     }),
   lastName: Joi.string()
+    .trim()
     .min(2)
     .max(50)
     .messages({
@@ -78,11 +92,13 @@ const updateUserSchema = Joi.object({
       'string.max': 'Last name cannot exceed 50 characters',
     }),
   role: Joi.string()
+    .trim()
     .valid(...ROLES_ARRAY)
     .messages({
       'any.only': `Role must be one of: ${ROLES_ARRAY.join(', ')}`,
     }),
   phone: Joi.string()
+    .trim()
     .max(20)
     .allow('', null)
     .optional()
@@ -99,6 +115,7 @@ const updateUserSchema = Joi.object({
  */
 const updateProfileSchema = Joi.object({
   firstName: Joi.string()
+    .trim()
     .min(2)
     .max(50)
     .messages({
@@ -106,6 +123,7 @@ const updateProfileSchema = Joi.object({
       'string.max': 'First name cannot exceed 50 characters',
     }),
   lastName: Joi.string()
+    .trim()
     .min(2)
     .max(50)
     .messages({
@@ -113,6 +131,7 @@ const updateProfileSchema = Joi.object({
       'string.max': 'Last name cannot exceed 50 characters',
     }),
   phone: Joi.string()
+    .trim()
     .max(20)
     .allow('', null)
     .optional()
@@ -149,12 +168,14 @@ const changePasswordSchema = Joi.object({
       'any.required': 'Current password is required',
     }),
   newPassword: Joi.string()
-    .min(6)
+    .min(8)
     .max(100)
+    .pattern(PASSWORD_PATTERN)
     .required()
     .messages({
-      'string.min': 'New password must be at least 6 characters',
+      'string.min': 'New password must be at least 8 characters',
       'string.max': 'New password cannot exceed 100 characters',
+      'string.pattern.base': PASSWORD_MESSAGE,
       'any.required': 'New password is required',
     }),
 });

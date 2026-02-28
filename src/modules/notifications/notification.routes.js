@@ -1,7 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const notificationController = require('./notification.controller');
-const { authenticate, isAuthenticated } = require('../../middleware');
+const { authenticate, isAuthenticated, validate } = require('../../middleware');
+const {
+  notificationIdParamSchema,
+  getNotificationsQuerySchema,
+} = require('./notification.validation');
 
 /**
  * All notification routes require authentication
@@ -26,20 +30,20 @@ router.patch('/read-all', authenticate, isAuthenticated, notificationController.
  * @desc    Get user's notifications
  * @access  Authenticated
  */
-router.get('/', authenticate, isAuthenticated, notificationController.getAll);
+router.get('/', authenticate, isAuthenticated, validate(getNotificationsQuerySchema, 'query'), notificationController.getAll);
 
 /**
  * @route   PATCH /api/notifications/:id/read
  * @desc    Mark single notification as read
  * @access  Authenticated
  */
-router.patch('/:id/read', authenticate, isAuthenticated, notificationController.markAsRead);
+router.patch('/:id/read', authenticate, isAuthenticated, validate(notificationIdParamSchema, 'params'), notificationController.markAsRead);
 
 /**
  * @route   DELETE /api/notifications/:id
  * @desc    Delete a notification
  * @access  Authenticated
  */
-router.delete('/:id', authenticate, isAuthenticated, notificationController.delete);
+router.delete('/:id', authenticate, isAuthenticated, validate(notificationIdParamSchema, 'params'), notificationController.delete);
 
 module.exports = router;

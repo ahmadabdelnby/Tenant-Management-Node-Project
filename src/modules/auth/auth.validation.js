@@ -5,6 +5,7 @@ const Joi = require('joi');
  */
 const loginSchema = Joi.object({
   email: Joi.string()
+    .trim()
     .email()
     .required()
     .messages({
@@ -12,10 +13,10 @@ const loginSchema = Joi.object({
       'any.required': 'Email is required',
     }),
   password: Joi.string()
-    .min(6)
+    .min(8)
     .required()
     .messages({
-      'string.min': 'Password must be at least 6 characters',
+      'string.min': 'Password must be at least 8 characters',
       'any.required': 'Password is required',
     }),
 });
