@@ -124,13 +124,17 @@ const paymentRepository = {
       tenancyInclude.required = true;
     }
 
-    const rows = await Payment.findAll({
+    const queryOptions = {
       where,
       include: [tenancyInclude],
       order: [['year', 'DESC'], ['month', 'DESC']],
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-    });
+    };
+    if (limit) {
+      queryOptions.limit = parseInt(limit);
+      queryOptions.offset = parseInt(offset);
+    }
+
+    const rows = await Payment.findAll(queryOptions);
 
     return rows.map(p => flattenPayment(p.get({ plain: true })));
   },

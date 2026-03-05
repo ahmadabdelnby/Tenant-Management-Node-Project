@@ -83,16 +83,20 @@ const tenancyRepository = {
       unitInclude.required = true;
     }
 
-    const rows = await Tenancy.findAll({
+    const queryOptions = {
       where,
       include: [
         unitInclude,
         { model: User, as: 'tenant', attributes: ['email', 'first_name', 'last_name'] },
       ],
       order: [['created_at', 'DESC']],
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-    });
+    };
+    if (limit) {
+      queryOptions.limit = parseInt(limit);
+      queryOptions.offset = parseInt(offset);
+    }
+
+    const rows = await Tenancy.findAll(queryOptions);
 
     return rows.map(t => flattenTenancy(t.get({ plain: true })));
   },

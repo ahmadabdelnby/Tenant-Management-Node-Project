@@ -55,7 +55,7 @@ const buildingRepository = {
       ];
     }
 
-    const rows = await Building.findAll({
+    const queryOptions = {
       where,
       include: [OWNER_INCLUDE],
       attributes: {
@@ -64,9 +64,13 @@ const buildingRepository = {
         ],
       },
       order: [['created_at', 'DESC']],
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-    });
+    };
+    if (limit) {
+      queryOptions.limit = parseInt(limit);
+      queryOptions.offset = parseInt(offset);
+    }
+
+    const rows = await Building.findAll(queryOptions);
 
     return rows.map(b => {
       const plain = b.get({ plain: true });

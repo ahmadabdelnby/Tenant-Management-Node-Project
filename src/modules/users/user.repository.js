@@ -47,13 +47,17 @@ const userRepository = {
       ];
     }
 
-    const rows = await User.findAll({
+    const queryOptions = {
       where,
       attributes: USER_ATTRIBUTES,
       order: [['created_at', 'DESC']],
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-    });
+    };
+    if (limit) {
+      queryOptions.limit = parseInt(limit);
+      queryOptions.offset = parseInt(offset);
+    }
+
+    const rows = await User.findAll(queryOptions);
     return rows.map(r => r.get({ plain: true }));
   },
 

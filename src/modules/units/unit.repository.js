@@ -53,7 +53,7 @@ const unitRepository = {
       buildingWhere.owner_id = filters.ownerId;
     }
 
-    const rows = await Unit.findAll({
+    const queryOptions = {
       where,
       include: [{
         model: Building,
@@ -63,9 +63,13 @@ const unitRepository = {
         required: Object.keys(buildingWhere).length > 0,
       }],
       order: [['created_at', 'DESC']],
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-    });
+    };
+    if (limit) {
+      queryOptions.limit = parseInt(limit);
+      queryOptions.offset = parseInt(offset);
+    }
+
+    const rows = await Unit.findAll(queryOptions);
 
     return rows.map(u => {
       const plain = u.get({ plain: true });

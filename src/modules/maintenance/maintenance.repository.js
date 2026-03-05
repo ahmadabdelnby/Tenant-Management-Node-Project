@@ -97,16 +97,20 @@ const maintenanceRepository = {
       unitInclude.required = true;
     }
 
-    const rows = await MaintenanceRequest.findAll({
+    const queryOptions = {
       where,
       include: [
         unitInclude,
         { model: User, as: 'tenant', attributes: ['email', 'first_name', 'last_name'] },
       ],
       order: [['created_at', 'DESC']],
-      limit: parseInt(limit, 10),
-      offset: parseInt(offset, 10),
-    });
+    };
+    if (limit) {
+      queryOptions.limit = parseInt(limit, 10);
+      queryOptions.offset = parseInt(offset, 10);
+    }
+
+    const rows = await MaintenanceRequest.findAll(queryOptions);
 
     return rows.map(r => flattenMR(r.get({ plain: true })));
   },

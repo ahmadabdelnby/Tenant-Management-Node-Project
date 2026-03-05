@@ -7,6 +7,19 @@
  * @returns {Object} - Pagination response
  */
 const buildPaginationResponse = (data, page, limit, total) => {
+  if (limit === 0) {
+    return {
+      data,
+      pagination: {
+        currentPage: 1,
+        itemsPerPage: total,
+        totalItems: total,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
+    };
+  }
   const totalPages = Math.ceil(total / limit);
   
   return {
@@ -29,7 +42,12 @@ const buildPaginationResponse = (data, page, limit, total) => {
  */
 const parsePaginationParams = (query) => {
   const page = Math.max(1, parseInt(query.page, 10) || 1);
-  const limit = Math.min(100, Math.max(1, parseInt(query.limit, 10) || 10));
+  const rawLimit = parseInt(query.limit, 10);
+  // limit=0 means "no limit" — fetch all records
+  if (rawLimit === 0) {
+    return { page: 1, limit: 0, offset: 0 };
+  }
+  const limit = Math.min(500, Math.max(1, rawLimit || 10));
   const offset = (page - 1) * limit;
   
   return { page, limit, offset };
