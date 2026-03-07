@@ -33,6 +33,18 @@ const PaymentLink = sequelize.define('PaymentLink', {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
+  tenant_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  unit_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  building_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
 }, {
   tableName: 'payment_links',
   createdAt: 'created_at',

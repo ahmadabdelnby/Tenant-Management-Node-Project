@@ -24,6 +24,18 @@ router.post(
 );
 
 /**
+ * @route   GET /api/payments/my-payment-links
+ * @desc    Get payment links for the logged-in tenant
+ * @access  Authenticated (Tenant)
+ */
+router.get(
+  '/my-payment-links',
+  authenticate,
+  isAuthenticated,
+  paymentController.getMyPaymentLinks
+);
+
+/**
  * @route   GET /api/payments/payment-links
  * @desc    Get all generated payment links (history)
  * @access  Admin, Owner
@@ -46,6 +58,18 @@ router.put(
   isAdminOrOwner,
   auditLog('UPDATE', 'PAYMENT_LINK'),
   paymentController.updatePaymentLink
+);
+
+/**
+ * @route   GET /api/payments/payment-links/:id/invoice
+ * @desc    Download PDF invoice for a payment link
+ * @access  Authenticated
+ */
+router.get(
+  '/payment-links/:id/invoice',
+  authenticate,
+  isAuthenticated,
+  paymentController.downloadPaymentLinkInvoice
 );
 
 /**

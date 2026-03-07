@@ -63,6 +63,21 @@ Notification.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 User.hasMany(AuditLog, { foreignKey: 'user_id', as: 'auditLogs' });
 AuditLog.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
+// PaymentLink ↔ User (Tenant)
+User.hasMany(PaymentLink, { foreignKey: 'tenant_id', as: 'paymentLinks' });
+PaymentLink.belongsTo(User, { foreignKey: 'tenant_id', as: 'tenant' });
+
+// PaymentLink ↔ Unit
+Unit.hasMany(PaymentLink, { foreignKey: 'unit_id', as: 'paymentLinks' });
+PaymentLink.belongsTo(Unit, { foreignKey: 'unit_id', as: 'unit' });
+
+// PaymentLink ↔ Building
+Building.hasMany(PaymentLink, { foreignKey: 'building_id', as: 'paymentLinks' });
+PaymentLink.belongsTo(Building, { foreignKey: 'building_id', as: 'building' });
+
+// PaymentLink ↔ User (Creator)
+PaymentLink.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
+
 module.exports = {
   sequelize,
   testConnection,
