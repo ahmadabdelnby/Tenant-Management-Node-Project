@@ -1,10 +1,16 @@
-const { Building, User, Unit } = require('../../models');
+const { Building, User, Unit, City } = require('../../models');
 const { Op, fn, col, literal } = require('sequelize');
 
 const OWNER_INCLUDE = {
   model: User,
   as: 'owner',
   attributes: ['email', 'first_name', 'last_name'],
+};
+
+const CITY_INCLUDE = {
+  model: City,
+  as: 'city',
+  attributes: ['id', 'name_en', 'name_ar'],
 };
 
 /**
@@ -16,7 +22,7 @@ const buildingRepository = {
    */
   async findById(id) {
     const building = await Building.findByPk(id, {
-      include: [OWNER_INCLUDE],
+      include: [OWNER_INCLUDE, CITY_INCLUDE],
       attributes: {
         include: [
           [literal('(SELECT COUNT(*) FROM units WHERE units.building_id = Building.id AND units.deleted_at IS NULL)'), 'total_units'],
@@ -30,6 +36,10 @@ const buildingRepository = {
     plain.owner_first_name = plain.owner?.first_name || null;
     plain.owner_last_name = plain.owner?.last_name || null;
     delete plain.owner;
+    // Flatten city fields
+    plain.city_name_en = plain.city?.name_en || null;
+    plain.city_name_ar = plain.city?.name_ar || null;
+    delete plain.city;
     return plain;
   },
 
@@ -42,28 +52,32 @@ const buildingRepository = {
     if (filters.ownerId) {
       where.owner_id = filters.ownerId;
     }
-    if (filters.city) {
-      where.city = { [Op.like]: `%${filters.city}%` };
+    if (filters.cityId) {
+      where.city_id = filters.cityId;
     }
     if (filters.search) {
       const searchTerm = `%${filters.search}%`;
       where[Op.or] = [
         { name_en: { [Op.like]: searchTerm } },
         { name_ar: { [Op.like]: searchTerm } },
-        { address: { [Op.like]: searchTerm } },
-        { city: { [Op.like]: searchTerm } },
+        { area: { [Op.like]: searchTerm } },
+        { street: { [Op.like]: searchTerm } },
+        { block: { [Op.like]: searchTerm } },
+        { '$city.name_en$': { [Op.like]: searchTerm } },
+        { '$city.name_ar$': { [Op.like]: searchTerm } },
       ];
     }
 
     const queryOptions = {
       where,
-      include: [OWNER_INCLUDE],
+      include: [OWNER_INCLUDE, CITY_INCLUDE],
       attributes: {
         include: [
           [literal('(SELECT COUNT(*) FROM units WHERE units.building_id = Building.id AND units.deleted_at IS NULL)'), 'total_units'],
         ],
       },
       order: [['created_at', 'DESC']],
+      subQuery: false,
     };
     if (limit) {
       queryOptions.limit = parseInt(limit);
@@ -78,6 +92,9 @@ const buildingRepository = {
       plain.owner_first_name = plain.owner?.first_name || null;
       plain.owner_last_name = plain.owner?.last_name || null;
       delete plain.owner;
+      plain.city_name_en = plain.city?.name_en || null;
+      plain.city_name_ar = plain.city?.name_ar || null;
+      delete plain.city;
       return plain;
     });
   },
@@ -91,35 +108,40 @@ const buildingRepository = {
     if (filters.ownerId) {
       where.owner_id = filters.ownerId;
     }
-    if (filters.city) {
-      where.city = { [Op.like]: `%${filters.city}%` };
+    if (filters.cityId) {
+      where.city_id = filters.cityId;
     }
     if (filters.search) {
       const searchTerm = `%${filters.search}%`;
       where[Op.or] = [
         { name_en: { [Op.like]: searchTerm } },
         { name_ar: { [Op.like]: searchTerm } },
-        { address: { [Op.like]: searchTerm } },
-        { city: { [Op.like]: searchTerm } },
+        { area: { [Op.like]: searchTerm } },
+        { street: { [Op.like]: searchTerm } },
+        { block: { [Op.like]: searchTerm } },
+        { '$city.name_en$': { [Op.like]: searchTerm } },
+        { '$city.name_ar$': { [Op.like]: searchTerm } },
       ];
     }
 
-    return Building.count({ where });
+    return Building.count({ where, include: filters.search ? [CITY_INCLUDE] : [] });
   },
 
   /**
    * Create new building
    */
   async create(buildingData) {
-    const { nameEn, nameAr, address, city, postalCode, country, mapEmbed, ownerId, latitude, longitude, descriptionEn, descriptionAr } = buildingData;
+    const { nameEn, nameAr, cityId, area, block, avenue, street, buildingNumber, mapEmbed, ownerId, latitude, longitude, descriptionEn, descriptionAr } = buildingData;
 
     const building = await Building.create({
       name_en: nameEn,
       name_ar: nameAr,
-      address,
-      city,
-      postal_code: postalCode || null,
-      country,
+      city_id: cityId,
+      area: area || null,
+      block: block || null,
+      avenue: avenue || null,
+      street: street || null,
+      building_number: buildingNumber || null,
       map_embed: mapEmbed || null,
       owner_id: ownerId,
       latitude: latitude || null,
@@ -139,10 +161,12 @@ const buildingRepository = {
 
     if (buildingData.nameEn) updateData.name_en = buildingData.nameEn;
     if (buildingData.nameAr) updateData.name_ar = buildingData.nameAr;
-    if (buildingData.address) updateData.address = buildingData.address;
-    if (buildingData.city) updateData.city = buildingData.city;
-    if (buildingData.postalCode !== undefined) updateData.postal_code = buildingData.postalCode || null;
-    if (buildingData.country) updateData.country = buildingData.country;
+    if (buildingData.cityId) updateData.city_id = buildingData.cityId;
+    if (buildingData.area !== undefined) updateData.area = buildingData.area || null;
+    if (buildingData.block !== undefined) updateData.block = buildingData.block || null;
+    if (buildingData.avenue !== undefined) updateData.avenue = buildingData.avenue || null;
+    if (buildingData.street !== undefined) updateData.street = buildingData.street || null;
+    if (buildingData.buildingNumber !== undefined) updateData.building_number = buildingData.buildingNumber || null;
     if (buildingData.mapEmbed !== undefined) updateData.map_embed = buildingData.mapEmbed || null;
     if (buildingData.ownerId) updateData.owner_id = buildingData.ownerId;
     if (buildingData.latitude !== undefined) updateData.latitude = buildingData.latitude || null;

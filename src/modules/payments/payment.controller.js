@@ -297,6 +297,31 @@ const paymentController = {
       next(error);
     }
   },
+
+  /**
+   * Update payment link status
+   * PUT /api/payments/payment-links/:id
+   */
+  async updatePaymentLink(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      const link = await PaymentLink.findByPk(id);
+      if (!link) {
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ success: false, message: 'Payment link not found' });
+      }
+
+      await link.update({ status });
+      logger.info(`Payment link ${id} status updated to ${status} by user ${req.user.id}`);
+
+      res.status(HTTP_STATUS.OK).json(
+        successResponse(link, 'Payment link status updated successfully')
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 module.exports = paymentController;

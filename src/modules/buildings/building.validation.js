@@ -11,59 +11,68 @@ const createBuildingSchema = Joi.object({
     .trim()
     .min(2)
     .max(100)
-    .required()
+    .allow('', null)
+    .optional()
     .messages({
       'string.min': 'Building name (English) must be at least 2 characters',
       'string.max': 'Building name (English) cannot exceed 100 characters',
-      'any.required': 'Building name (English) is required',
     }),
   nameAr: Joi.string()
     .trim()
     .min(2)
     .max(100)
-    .required()
+    .allow('', null)
+    .optional()
     .messages({
       'string.min': 'Building name (Arabic) must be at least 2 characters',
       'string.max': 'Building name (Arabic) cannot exceed 100 characters',
-      'any.required': 'Building name (Arabic) is required',
     }),
-  address: Joi.string()
-    .trim()
-    .min(5)
-    .max(255)
+  cityId: Joi.number()
+    .integer()
     .required()
     .messages({
-      'string.min': 'Address must be at least 5 characters',
-      'string.max': 'Address cannot exceed 255 characters',
-      'any.required': 'Address is required',
-    }),
-  city: Joi.string()
-    .trim()
-    .min(2)
-    .max(100)
-    .required()
-    .messages({
-      'string.min': 'City must be at least 2 characters',
-      'string.max': 'City cannot exceed 100 characters',
+      'number.base': 'City is required',
       'any.required': 'City is required',
     }),
-  postalCode: Joi.string()
+  area: Joi.string()
     .trim()
-    .max(20)
-    .allow('')
+    .max(100)
+    .allow('', null)
     .optional()
     .messages({
-      'string.max': 'Postal code cannot exceed 20 characters',
+      'string.max': 'Area cannot exceed 100 characters',
     }),
-  country: Joi.string()
+  block: Joi.string()
     .trim()
-    .min(2)
-    .max(100)
-    .required()
+    .max(20)
+    .allow('', null)
+    .optional()
     .messages({
-      'string.min': 'Country must be at least 2 characters',
-      'string.max': 'Country cannot exceed 100 characters',
-      'any.required': 'Country is required',
+      'string.max': 'Block cannot exceed 20 characters',
+    }),
+  avenue: Joi.string()
+    .trim()
+    .max(100)
+    .allow('', null)
+    .optional()
+    .messages({
+      'string.max': 'Avenue cannot exceed 100 characters',
+    }),
+  street: Joi.string()
+    .trim()
+    .max(100)
+    .allow('', null)
+    .optional()
+    .messages({
+      'string.max': 'Street cannot exceed 100 characters',
+    }),
+  buildingNumber: Joi.string()
+    .trim()
+    .max(20)
+    .allow('', null)
+    .optional()
+    .messages({
+      'string.max': 'Building number cannot exceed 20 characters',
     }),
   mapEmbed: Joi.string()
     .trim()
@@ -141,36 +150,45 @@ const updateBuildingSchema = Joi.object({
       'string.min': 'Building name (Arabic) must be at least 2 characters',
       'string.max': 'Building name (Arabic) cannot exceed 100 characters',
     }),
-  address: Joi.string()
-    .trim()
-    .min(5)
-    .max(255)
+  cityId: Joi.number()
+    .integer()
     .messages({
-      'string.min': 'Address must be at least 5 characters',
-      'string.max': 'Address cannot exceed 255 characters',
+      'number.base': 'City must be a valid ID',
     }),
-  city: Joi.string()
+  area: Joi.string()
     .trim()
-    .min(2)
     .max(100)
+    .allow('', null)
     .messages({
-      'string.min': 'City must be at least 2 characters',
-      'string.max': 'City cannot exceed 100 characters',
+      'string.max': 'Area cannot exceed 100 characters',
     }),
-  postalCode: Joi.string()
+  block: Joi.string()
     .trim()
     .max(20)
-    .allow('')
+    .allow('', null)
     .messages({
-      'string.max': 'Postal code cannot exceed 20 characters',
+      'string.max': 'Block cannot exceed 20 characters',
     }),
-  country: Joi.string()
+  avenue: Joi.string()
     .trim()
-    .min(2)
     .max(100)
+    .allow('', null)
     .messages({
-      'string.min': 'Country must be at least 2 characters',
-      'string.max': 'Country cannot exceed 100 characters',
+      'string.max': 'Avenue cannot exceed 100 characters',
+    }),
+  street: Joi.string()
+    .trim()
+    .max(100)
+    .allow('', null)
+    .messages({
+      'string.max': 'Street cannot exceed 100 characters',
+    }),
+  buildingNumber: Joi.string()
+    .trim()
+    .max(20)
+    .allow('', null)
+    .messages({
+      'string.max': 'Building number cannot exceed 20 characters',
     }),
   mapEmbed: Joi.string()
     .trim()

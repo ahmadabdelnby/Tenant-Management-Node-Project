@@ -248,7 +248,7 @@ const maintenanceRepository = {
         include: [{
           model: Building,
           as: 'building',
-          attributes: ['id', 'name_en', 'name_ar', 'address'],
+          attributes: ['id', 'name_en', 'name_ar'],
         }],
       }],
       order: [[{ model: Unit, as: 'unit' }, { model: Building, as: 'building' }, 'name_en', 'ASC']],
@@ -267,7 +267,7 @@ const maintenanceRepository = {
         building_name: plain.unit?.building?.name_en || null,
         building_name_en: plain.unit?.building?.name_en || null,
         building_name_ar: plain.unit?.building?.name_ar || null,
-        building_address: plain.unit?.building?.address || null,
+
       };
     });
   },

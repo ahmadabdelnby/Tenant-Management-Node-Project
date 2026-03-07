@@ -36,6 +36,19 @@ router.get(
 );
 
 /**
+ * @route   PUT /api/payments/payment-links/:id
+ * @desc    Update payment link status
+ * @access  Admin, Owner
+ */
+router.put(
+  '/payment-links/:id',
+  authenticate,
+  isAdminOrOwner,
+  auditLog('UPDATE', 'PAYMENT_LINK'),
+  paymentController.updatePaymentLink
+);
+
+/**
  * @route   GET /api/payments/export
  * @desc    Export payments to Excel
  * @access  Admin, Owner

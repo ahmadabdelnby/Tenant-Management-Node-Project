@@ -1,6 +1,7 @@
 const { sequelize, testConnection } = require('../config/sequelize');
 const User = require('./User');
 const Building = require('./Building');
+const City = require('./City');
 const Unit = require('./Unit');
 const Tenancy = require('./Tenancy');
 const MaintenanceRequest = require('./MaintenanceRequest');
@@ -13,6 +14,10 @@ const AuditLog = require('./AuditLog');
 // ============================================
 // ASSOCIATIONS
 // ============================================
+
+// City ↔ Building
+City.hasMany(Building, { foreignKey: 'city_id', as: 'buildings' });
+Building.belongsTo(City, { foreignKey: 'city_id', as: 'city' });
 
 // User ↔ Building (Owner)
 User.hasMany(Building, { foreignKey: 'owner_id', as: 'buildings' });
@@ -63,6 +68,7 @@ module.exports = {
   testConnection,
   User,
   Building,
+  City,
   Unit,
   Tenancy,
   MaintenanceRequest,

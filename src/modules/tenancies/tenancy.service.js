@@ -238,7 +238,6 @@ const tenancyService = {
         buildingName: t.building_name,
         buildingNameEn: t.building_name_en,
         buildingNameAr: t.building_name_ar,
-        buildingAddress: t.building_address,
       },
       createdAt: t.created_at,
       updatedAt: t.updated_at,

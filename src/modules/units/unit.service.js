@@ -30,7 +30,6 @@ const unitService = {
         name: unit.building_name,
         nameEn: unit.building_name_en,
         nameAr: unit.building_name_ar,
-        address: unit.building_address,
       },
       createdAt: unit.created_at,
       updatedAt: unit.updated_at,

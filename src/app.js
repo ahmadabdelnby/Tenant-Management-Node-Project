@@ -14,6 +14,7 @@ const xssSanitize = require('./middleware/xssSanitize.middleware');
 const { authRoutes } = require('./modules/auth');
 const { userRoutes, profileRoutes } = require('./modules/users');
 const { buildingRoutes } = require('./modules/buildings');
+const { cityRoutes } = require('./modules/cities');
 const { unitRoutes, unitController } = require('./modules/units');
 const { tenancyRoutes, myTenanciesRoutes } = require('./modules/tenancies');
 const { maintenanceRoutes } = require('./modules/maintenance');
@@ -93,6 +94,9 @@ app.use('/api/profile', profileRoutes);
 
 // Building routes
 app.use('/api/buildings', buildingRoutes);
+
+// City routes
+app.use('/api/cities', cityRoutes);
 
 // Nested route: Units by building
 app.get('/api/buildings/:buildingId/units', authenticate, isAdminOrOwner, unitController.getByBuildingId);

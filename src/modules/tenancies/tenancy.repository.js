@@ -9,7 +9,7 @@ const FULL_INCLUDE = [
     include: [{
       model: Building,
       as: 'building',
-      attributes: ['name_en', 'name_ar', 'owner_id', 'address', 'map_embed'],
+      attributes: ['name_en', 'name_ar', 'owner_id', 'map_embed'],
     }],
   },
   {
@@ -28,7 +28,6 @@ function flattenTenancy(plain) {
   plain.building_name = plain.unit?.building?.name_en || null;
   plain.building_name_en = plain.unit?.building?.name_en || null;
   plain.building_name_ar = plain.unit?.building?.name_ar || null;
-  plain.building_address = plain.unit?.building?.address || null;
   plain.building_map_embed = plain.unit?.building?.map_embed || null;
   plain.owner_id = plain.unit?.building?.owner_id || null;
   plain.tenant_email = plain.tenant?.email || null;
@@ -72,7 +71,7 @@ const tenancyRepository = {
       include: [{
         model: Building,
         as: 'building',
-        attributes: ['name_en', 'name_ar', 'owner_id', 'address', 'map_embed'],
+        attributes: ['name_en', 'name_ar', 'owner_id', 'map_embed'],
         where: Object.keys(buildingWhere).length ? buildingWhere : undefined,
         required: Object.keys(buildingWhere).length > 0,
       }],
@@ -216,7 +215,7 @@ const tenancyRepository = {
         include: [{
           model: Building,
           as: 'building',
-          attributes: ['name_en', 'name_ar', 'address'],
+          attributes: ['name_en', 'name_ar'],
         }],
       }],
       order: [['created_at', 'DESC']],
@@ -229,7 +228,6 @@ const tenancyRepository = {
       plain.building_name = plain.unit?.building?.name_en || null;
       plain.building_name_en = plain.unit?.building?.name_en || null;
       plain.building_name_ar = plain.unit?.building?.name_ar || null;
-      plain.building_address = plain.unit?.building?.address || null;
       delete plain.unit;
       return plain;
     });

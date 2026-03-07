@@ -13,27 +13,35 @@ const Building = sequelize.define('Building', {
   },
   name_en: {
     type: DataTypes.STRING(100),
-    allowNull: false,
+    allowNull: true,
   },
   name_ar: {
     type: DataTypes.STRING(100),
+    allowNull: true,
+  },
+  city_id: {
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
-  address: {
-    type: DataTypes.STRING(255),
-    allowNull: false,
-  },
-  city: {
+  area: {
     type: DataTypes.STRING(100),
-    allowNull: false,
+    allowNull: true,
   },
-  postal_code: {
+  block: {
     type: DataTypes.STRING(20),
     allowNull: true,
   },
-  country: {
+  avenue: {
     type: DataTypes.STRING(100),
-    allowNull: false,
+    allowNull: true,
+  },
+  street: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+  },
+  building_number: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
   },
   description_en: {
     type: DataTypes.TEXT,

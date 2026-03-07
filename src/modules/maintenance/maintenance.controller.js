@@ -31,7 +31,6 @@ const maintenanceController = {
         bathrooms: u.bathrooms,
         buildingId: u.building_id,
         buildingName: u.building_name,
-        buildingAddress: u.building_address,
       }));
       
       res.status(HTTP_STATUS.OK).json({

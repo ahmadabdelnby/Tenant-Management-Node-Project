@@ -5,7 +5,7 @@ const { UNIT_STATUS } = require('../../shared/constants');
 const BUILDING_INCLUDE = {
   model: Building,
   as: 'building',
-  attributes: ['name_en', 'name_ar', 'address', 'owner_id'],
+  attributes: ['name_en', 'name_ar', 'owner_id'],
 };
 
 /**
@@ -24,7 +24,6 @@ const unitRepository = {
     plain.building_name = plain.building?.name_en || null;
     plain.building_name_en = plain.building?.name_en || null;
     plain.building_name_ar = plain.building?.name_ar || null;
-    plain.building_address = plain.building?.address || null;
     plain.owner_id = plain.building?.owner_id || null;
     delete plain.building;
     return plain;
@@ -58,7 +57,7 @@ const unitRepository = {
       include: [{
         model: Building,
         as: 'building',
-        attributes: ['name_en', 'name_ar', 'address', 'owner_id'],
+        attributes: ['name_en', 'name_ar', 'owner_id'],
         where: Object.keys(buildingWhere).length ? buildingWhere : undefined,
         required: Object.keys(buildingWhere).length > 0,
       }],
@@ -76,7 +75,6 @@ const unitRepository = {
       plain.building_name = plain.building?.name_en || null;
       plain.building_name_en = plain.building?.name_en || null;
       plain.building_name_ar = plain.building?.name_ar || null;
-      plain.building_address = plain.building?.address || null;
       plain.owner_id = plain.building?.owner_id || null;
       delete plain.building;
       return plain;
