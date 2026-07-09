@@ -5,17 +5,17 @@ const FULL_INCLUDE = [
   {
     model: Unit,
     as: 'unit',
-    attributes: ['unit_number', 'building_id'],
+    attributes: ['unit_number', 'building_id', 'floor'],
     include: [{
       model: Building,
       as: 'building',
-      attributes: ['name_en', 'name_ar', 'owner_id', 'map_embed'],
+      attributes: ['name_en', 'name_ar', 'owner_id', 'map_embed', 'area', 'block', 'avenue', 'street', 'building_number'],
     }],
   },
   {
     model: User,
     as: 'tenant',
-    attributes: ['email', 'first_name', 'last_name'],
+    attributes: ['email', 'first_name', 'last_name', 'phone'],
   },
 ];
 
@@ -29,10 +29,37 @@ function flattenTenancy(plain) {
   plain.building_name_en = plain.unit?.building?.name_en || null;
   plain.building_name_ar = plain.unit?.building?.name_ar || null;
   plain.building_map_embed = plain.unit?.building?.map_embed || null;
+  plain.building_area = plain.unit?.building?.area || null;
+  plain.building_block = plain.unit?.building?.block || null;
+  plain.building_avenue = plain.unit?.building?.avenue || null;
+  plain.building_street = plain.unit?.building?.street || null;
+  plain.building_number = plain.unit?.building?.building_number || null;
+  plain.unit_floor = plain.unit?.floor || null;
   plain.owner_id = plain.unit?.building?.owner_id || null;
   plain.tenant_email = plain.tenant?.email || null;
   plain.tenant_first_name = plain.tenant?.first_name || null;
   plain.tenant_last_name = plain.tenant?.last_name || null;
+  plain.tenant_phone = plain.tenant?.phone || null;
+  plain.contract_number = plain.contract_number || null;
+  plain.contract_place = plain.contract_place || null;
+  plain.contract_date = plain.contract_date || null;
+  plain.first_party_name = plain.first_party_name || null;
+  plain.first_party_id = plain.first_party_id || null;
+  plain.first_party_nationality = plain.first_party_nationality || null;
+  plain.first_party_phone = plain.first_party_phone || null;
+  plain.first_party_address = plain.first_party_address || null;
+  plain.second_party_name = plain.second_party_name || null;
+  plain.second_party_id = plain.second_party_id || null;
+  plain.second_party_representative_name = plain.second_party_representative_name || null;
+  plain.second_party_representative_civil_id = plain.second_party_representative_civil_id || null;
+  plain.second_party_representative_nationality = plain.second_party_representative_nationality || null;
+  plain.second_party_representative_phone = plain.second_party_representative_phone || null;
+  plain.second_party_representative_address = plain.second_party_representative_address || null;
+  plain.second_party_nationality = plain.second_party_nationality || null;
+  plain.second_party_phone = plain.second_party_phone || null;
+  plain.second_party_address = plain.second_party_address || null;
+  plain.contract_duration = plain.contract_duration || null;
+  plain.contract_notes = plain.contract_notes || null;
   delete plain.unit;
   delete plain.tenant;
   return plain;
@@ -67,11 +94,11 @@ const tenancyRepository = {
     const unitInclude = {
       model: Unit,
       as: 'unit',
-      attributes: ['unit_number', 'building_id'],
+      attributes: ['unit_number', 'building_id', 'floor'],
       include: [{
         model: Building,
         as: 'building',
-        attributes: ['name_en', 'name_ar', 'owner_id', 'map_embed'],
+        attributes: ['name_en', 'name_ar', 'owner_id', 'map_embed', 'area', 'block', 'avenue', 'street', 'building_number'],
         where: Object.keys(buildingWhere).length ? buildingWhere : undefined,
         required: Object.keys(buildingWhere).length > 0,
       }],
@@ -86,7 +113,7 @@ const tenancyRepository = {
       where,
       include: [
         unitInclude,
-        { model: User, as: 'tenant', attributes: ['email', 'first_name', 'last_name'] },
+        { model: User, as: 'tenant', attributes: ['email', 'first_name', 'last_name', 'phone'] },
       ],
       order: [['created_at', 'DESC']],
     };
@@ -158,6 +185,26 @@ const tenancyRepository = {
       monthly_rent: monthlyRent,
       deposit_amount: depositAmount,
       is_active: true,
+      contract_number: tenancyData.contractNumber || null,
+      contract_place: tenancyData.contractPlace || null,
+      contract_date: tenancyData.contractDate || null,
+      first_party_name: tenancyData.firstPartyName || null,
+      first_party_id: tenancyData.firstPartyId || null,
+      first_party_nationality: tenancyData.firstPartyNationality || null,
+      first_party_phone: tenancyData.firstPartyPhone || null,
+      first_party_address: tenancyData.firstPartyAddress || null,
+      second_party_name: tenancyData.secondPartyName || null,
+      second_party_id: tenancyData.secondPartyId || null,
+      second_party_representative_name: tenancyData.secondPartyRepresentativeName || null,
+      second_party_representative_civil_id: tenancyData.secondPartyRepresentativeCivilId || null,
+      second_party_representative_nationality: tenancyData.secondPartyRepresentativeNationality || null,
+      second_party_representative_phone: tenancyData.secondPartyRepresentativePhone || null,
+      second_party_representative_address: tenancyData.secondPartyRepresentativeAddress || null,
+      second_party_nationality: tenancyData.secondPartyNationality || null,
+      second_party_phone: tenancyData.secondPartyPhone || null,
+      second_party_address: tenancyData.secondPartyAddress || null,
+      contract_duration: tenancyData.contractDuration || null,
+      contract_notes: tenancyData.contractNotes || null,
     });
 
     return tenancy.id;
@@ -173,6 +220,26 @@ const tenancyRepository = {
     if (tenancyData.monthlyRent !== undefined) updateData.monthly_rent = tenancyData.monthlyRent;
     if (tenancyData.depositAmount !== undefined) updateData.deposit_amount = tenancyData.depositAmount;
     if (tenancyData.isActive !== undefined) updateData.is_active = tenancyData.isActive;
+    if (tenancyData.contractNumber !== undefined) updateData.contract_number = tenancyData.contractNumber || null;
+    if (tenancyData.contractPlace !== undefined) updateData.contract_place = tenancyData.contractPlace || null;
+    if (tenancyData.contractDate !== undefined) updateData.contract_date = tenancyData.contractDate || null;
+    if (tenancyData.firstPartyName !== undefined) updateData.first_party_name = tenancyData.firstPartyName || null;
+    if (tenancyData.firstPartyId !== undefined) updateData.first_party_id = tenancyData.firstPartyId || null;
+    if (tenancyData.firstPartyNationality !== undefined) updateData.first_party_nationality = tenancyData.firstPartyNationality || null;
+    if (tenancyData.firstPartyPhone !== undefined) updateData.first_party_phone = tenancyData.firstPartyPhone || null;
+    if (tenancyData.firstPartyAddress !== undefined) updateData.first_party_address = tenancyData.firstPartyAddress || null;
+    if (tenancyData.secondPartyName !== undefined) updateData.second_party_name = tenancyData.secondPartyName || null;
+    if (tenancyData.secondPartyId !== undefined) updateData.second_party_id = tenancyData.secondPartyId || null;
+    if (tenancyData.secondPartyRepresentativeName !== undefined) updateData.second_party_representative_name = tenancyData.secondPartyRepresentativeName || null;
+    if (tenancyData.secondPartyRepresentativeCivilId !== undefined) updateData.second_party_representative_civil_id = tenancyData.secondPartyRepresentativeCivilId || null;
+    if (tenancyData.secondPartyRepresentativeNationality !== undefined) updateData.second_party_representative_nationality = tenancyData.secondPartyRepresentativeNationality || null;
+    if (tenancyData.secondPartyRepresentativePhone !== undefined) updateData.second_party_representative_phone = tenancyData.secondPartyRepresentativePhone || null;
+    if (tenancyData.secondPartyRepresentativeAddress !== undefined) updateData.second_party_representative_address = tenancyData.secondPartyRepresentativeAddress || null;
+    if (tenancyData.secondPartyNationality !== undefined) updateData.second_party_nationality = tenancyData.secondPartyNationality || null;
+    if (tenancyData.secondPartyPhone !== undefined) updateData.second_party_phone = tenancyData.secondPartyPhone || null;
+    if (tenancyData.secondPartyAddress !== undefined) updateData.second_party_address = tenancyData.secondPartyAddress || null;
+    if (tenancyData.contractDuration !== undefined) updateData.contract_duration = tenancyData.contractDuration || null;
+    if (tenancyData.contractNotes !== undefined) updateData.contract_notes = tenancyData.contractNotes || null;
 
     const [affectedCount] = await Tenancy.update(updateData, { where: { id } });
     return affectedCount > 0;
@@ -228,6 +295,33 @@ const tenancyRepository = {
       plain.building_name = plain.unit?.building?.name_en || null;
       plain.building_name_en = plain.unit?.building?.name_en || null;
       plain.building_name_ar = plain.unit?.building?.name_ar || null;
+      plain.tenant_phone = plain.tenant?.phone || null;
+      plain.building_area = plain.unit?.building?.area || null;
+      plain.building_block = plain.unit?.building?.block || null;
+      plain.building_avenue = plain.unit?.building?.avenue || null;
+      plain.building_street = plain.unit?.building?.street || null;
+      plain.building_number = plain.unit?.building?.building_number || null;
+      plain.unit_floor = plain.unit?.floor || null;
+      plain.contract_number = plain.contract_number || null;
+      plain.contract_place = plain.contract_place || null;
+      plain.contract_date = plain.contract_date || null;
+      plain.first_party_name = plain.first_party_name || null;
+      plain.first_party_id = plain.first_party_id || null;
+      plain.first_party_nationality = plain.first_party_nationality || null;
+      plain.first_party_phone = plain.first_party_phone || null;
+      plain.first_party_address = plain.first_party_address || null;
+      plain.second_party_name = plain.second_party_name || null;
+      plain.second_party_id = plain.second_party_id || null;
+      plain.second_party_representative_name = plain.second_party_representative_name || null;
+      plain.second_party_representative_civil_id = plain.second_party_representative_civil_id || null;
+      plain.second_party_representative_nationality = plain.second_party_representative_nationality || null;
+      plain.second_party_representative_phone = plain.second_party_representative_phone || null;
+      plain.second_party_representative_address = plain.second_party_representative_address || null;
+      plain.second_party_nationality = plain.second_party_nationality || null;
+      plain.second_party_phone = plain.second_party_phone || null;
+      plain.second_party_address = plain.second_party_address || null;
+      plain.contract_duration = plain.contract_duration || null;
+      plain.contract_notes = plain.contract_notes || null;
       delete plain.unit;
       return plain;
     });

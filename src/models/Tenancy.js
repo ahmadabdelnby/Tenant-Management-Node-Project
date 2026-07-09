@@ -35,6 +35,18 @@ const Tenancy = sequelize.define('Tenancy', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
+  contract_number: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  contract_place: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  contract_date: {
+    type: DataTypes.DATEONLY,
+    allowNull: true,
+  },
   first_party_name: {
     type: DataTypes.STRING,
     allowNull: true,
@@ -48,6 +60,50 @@ const Tenancy = sequelize.define('Tenancy', {
     allowNull: true,
   },
   second_party_id: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  second_party_representative_name: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  second_party_representative_civil_id: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  second_party_representative_nationality: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  second_party_representative_phone: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  second_party_representative_address: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  first_party_nationality: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  second_party_nationality: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  first_party_phone: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  second_party_phone: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  first_party_address: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  second_party_address: {
     type: DataTypes.STRING,
     allowNull: true,
   },

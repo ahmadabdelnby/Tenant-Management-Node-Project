@@ -20,7 +20,7 @@ router.get('/my-tenancies', authenticate, isAuthenticated, tenancyController.get
 
 /**
  * @route   GET /api/tenancies/:id/export-contract
- * @desc    Export tenancy contract as Word document
+ * @desc    Export tenancy contract as PDF document
  * @access  Admin, Owner (own buildings), Tenant (own tenancy)
  */
 router.get(
