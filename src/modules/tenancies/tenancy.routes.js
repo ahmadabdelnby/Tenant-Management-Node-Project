@@ -19,7 +19,19 @@ router.get('/', authenticate, isAuthenticated, tenancyController.getAll);
 router.get('/my-tenancies', authenticate, isAuthenticated, tenancyController.getMyTenancies);
 
 /**
- * @route   POST /api/tenancies
+ * @route   GET /api/tenancies/:id/export-contract
+ * @desc    Export tenancy contract as Word document
+ * @access  Admin, Owner (own buildings), Tenant (own tenancy)
+ */
+router.get(
+  '/:id/export-contract',
+  authenticate,
+  isAuthenticated,
+  validate(tenancyIdParamSchema, 'params'),
+  tenancyController.exportContract
+);
+
+/**
  * @desc    Create new tenancy
  * @access  Admin only
  */

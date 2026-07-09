@@ -35,6 +35,30 @@ const Tenancy = sequelize.define('Tenancy', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
+  first_party_name: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  second_party_name: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  first_party_id: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  second_party_id: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  contract_duration: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  contract_notes: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
 }, {
   tableName: 'tenancies',
   createdAt: 'created_at',
