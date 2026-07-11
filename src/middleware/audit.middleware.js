@@ -1,4 +1,4 @@
-const { AuditLog } = require('../models');
+const { AuditLog } = require('../../models');
 const logger = require('../shared/utils/logger');
 
 /**

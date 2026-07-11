@@ -27,11 +27,11 @@ const userService = {
       email: user.email,
       firstName: user.first_name,
       lastName: user.last_name,
-      phone: user.phone,
+      // phone: user.phone,
       role: user.role,
       isActive: Boolean(user.is_active),
-      createdAt: user.created_at,
-      updatedAt: user.updated_at,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     }));
     
     return buildPaginationResponse(formattedUsers, page, limit, total);
@@ -52,11 +52,11 @@ const userService = {
       email: user.email,
       firstName: user.first_name,
       lastName: user.last_name,
-      phone: user.phone,
+      // phone: user.phone,
       role: user.role,
       isActive: Boolean(user.is_active),
-      createdAt: user.created_at,
-      updatedAt: user.updated_at,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
   },
   
@@ -211,7 +211,7 @@ const userService = {
    */
   async changePassword(userId, { currentPassword, newPassword }) {
     // Get user with password hash
-    const { User } = require('../../models');
+    const { User } = require('../../../models');
     const user = await User.findByPk(userId, {
       attributes: ['id', 'password_hash'],
     });

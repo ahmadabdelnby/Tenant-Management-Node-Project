@@ -40,8 +40,8 @@ const maintenanceService = {
         firstName: request.tenant_first_name,
         lastName: request.tenant_last_name,
       },
-      createdAt: request.created_at,
-      updatedAt: request.updated_at,
+      createdAt: request.createdAt,
+      updatedAt: request.createdAt,
     };
   },
   
@@ -209,7 +209,7 @@ const maintenanceService = {
       { header: 'Building', key: 'building', width: 20 },
       { header: 'Unit', key: 'unit', width: 12 },
       { header: 'Tenant Name', key: 'tenantName', width: 25 },
-      { header: 'Phone', key: 'phone', width: 15 },
+      // { header: 'Phone', key: 'phone', width: 15 },
       { header: 'Title', key: 'title', width: 30 },
       { header: 'Category', key: 'category', width: 14 },
       { header: 'Priority', key: 'priority', width: 12 },
@@ -248,7 +248,7 @@ const maintenanceService = {
         description: r.description || '-',
         resolutionNotes: r.resolution_notes || '-',
         resolvedBy: r.resolver_first_name ? `${r.resolver_first_name} ${r.resolver_last_name}`.trim() : '-',
-        createdAt: formatDate(r.created_at),
+        createdAt: formatDate(r.createdAt),
         resolvedAt: formatDate(r.resolved_at),
       });
 

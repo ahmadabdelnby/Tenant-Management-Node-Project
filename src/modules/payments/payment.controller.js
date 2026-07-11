@@ -1,6 +1,6 @@
 const paymentService = require('./payment.service');
 const tahseeelService = require('./tahseeel.service');
-const { PaymentLink, User, Unit, Building } = require('../../models');
+const { PaymentLink, User, Unit, Building } = require('../../../models');
 const { successResponse, createdResponse } = require('../../shared/utils/responseFormatter');
 const { HTTP_STATUS } = require('../../shared/constants');
 const { parsePaginationParams } = require('../../shared/utils/paginationHelper');
@@ -284,7 +284,7 @@ const paymentController = {
           { model: Building, as: 'building', attributes: ['id', 'name_en', 'name_ar'] },
           { model: User, as: 'creator', attributes: ['id', 'first_name', 'last_name'] },
         ],
-        order: [['created_at', 'DESC']],
+        order: [['createdAt', 'DESC']],
         limit: parseInt(limit),
         offset,
       });
@@ -361,7 +361,7 @@ const paymentController = {
       const rentAmount = link.unit ? parseFloat(link.unit.rent_amount).toFixed(3) : null;
 
       const amount = parseFloat(link.amount).toFixed(3);
-      const createdAt = new Date(link.created_at).toLocaleString('en-GB', {
+      const createdAt = new Date(link.createdAt).toLocaleString('en-GB', {
         day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
       });
       const updatedAt = new Date(link.updated_at).toLocaleString('en-GB', {
@@ -518,7 +518,7 @@ const paymentController = {
           { model: Unit, as: 'unit', attributes: ['id', 'unit_number'] },
           { model: Building, as: 'building', attributes: ['id', 'name_en', 'name_ar'] },
         ],
-        order: [['created_at', 'DESC']],
+        order: [['createdAt', 'DESC']],
         limit: parseInt(limit),
         offset,
       });

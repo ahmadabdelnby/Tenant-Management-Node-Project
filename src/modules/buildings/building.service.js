@@ -37,8 +37,8 @@ const buildingService = {
         firstName: building.owner_first_name,
         lastName: building.owner_last_name,
       } : null,
-      createdAt: building.created_at,
-      updatedAt: building.updated_at,
+      createdAt: building.createdAt,
+      updatedAt: building.updatedAt,
     };
   },
   
@@ -80,7 +80,7 @@ const buildingService = {
 
     // Tenants can view the building if they have an active tenancy in it
     if (user.role === ROLES.TENANT) {
-      const { Tenancy, Unit } = require('../../models');
+      const { Tenancy, Unit } = require('../../../models');
       const tenancy = await Tenancy.findOne({
         where: { tenant_id: user.id, is_active: true },
         include: [{ model: Unit, as: 'unit', where: { building_id: id }, attributes: ['id'] }],

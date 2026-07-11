@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-const { User, TokenBlacklist } = require('../models');
+const { User, TokenBlacklist } = require('../../models');
 const { Op } = require('sequelize');
 const { AppError } = require('../shared/errors');
 const { HTTP_STATUS, ERROR_MESSAGES } = require('../shared/constants');
@@ -14,7 +14,7 @@ const authenticate = async (req, res, next) => {
   try {
     // Get token from header
     const authHeader = req.headers.authorization;
-    
+        
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       throw new AppError(ERROR_MESSAGES.TOKEN_REQUIRED, HTTP_STATUS.UNAUTHORIZED);
     }

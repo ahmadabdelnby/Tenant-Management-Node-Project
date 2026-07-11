@@ -1,0 +1,488 @@
+"use strict";
+
+/** @type {import('sequelize-cli').Migration} */
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    const cities_arr = [
+      {
+        name_en: "Kuwait City",
+        name_ar: "مدينة الكويت",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Sharq",
+        name_ar: "شرق",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Mirqab",
+        name_ar: "المرقاب",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Dasman",
+        name_ar: "دسمان",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Jibla",
+        name_ar: "جبلة",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Sulaibikhat",
+        name_ar: "الصليبيخات",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Qibla",
+        name_ar: "القبلة",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Salhiya",
+        name_ar: "الصالحية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Bneid Al-Gar",
+        name_ar: "بنيد القار",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Kaifan",
+        name_ar: "كيفان",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Shamiya",
+        name_ar: "الشامية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Rawda",
+        name_ar: "الروضة",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Adailiya",
+        name_ar: "العديلية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Khaldiya",
+        name_ar: "الخالدية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Qadsiya",
+        name_ar: "القادسية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Mansouriya",
+        name_ar: "المنصورية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Abdullah Al-Salem",
+        name_ar: "عبدالله السالم",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Nuzha",
+        name_ar: "النزهة",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Faiha",
+        name_ar: "الفيحاء",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Dasma",
+        name_ar: "الدسمة",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Doha",
+        name_ar: "الدوحة",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Shuwaikh",
+        name_ar: "الشويخ",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Rai",
+        name_ar: "الري",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Granada",
+        name_ar: "غرناطة",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Surra",
+        name_ar: "السرة",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Yarmouk",
+        name_ar: "اليرموك",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Qortuba",
+        name_ar: "قرطبة",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Hawalli",
+        name_ar: "حولي",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Salmiya",
+        name_ar: "السالمية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Rumaithiya",
+        name_ar: "الرميثية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Jabriya",
+        name_ar: "الجابرية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Mishref",
+        name_ar: "مشرف",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Bayan",
+        name_ar: "بيان",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Salwa",
+        name_ar: "سلوى",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Shaab",
+        name_ar: "الشعب",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Hitteen",
+        name_ar: "حطين",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Zahra",
+        name_ar: "الزهراء",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Siddiq",
+        name_ar: "الصديق",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Maidan Hawalli",
+        name_ar: "ميدان حولي",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Farwaniya",
+        name_ar: "الفروانية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Khaitan",
+        name_ar: "خيطان",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Jleeb Al-Shuyoukh",
+        name_ar: "جليب الشيوخ",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Abdullah Al-Mubarak",
+        name_ar: "عبدالله المبارك",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Ardhiya",
+        name_ar: "العارضية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Rehab",
+        name_ar: "الرحاب",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Sabah Al-Nasser",
+        name_ar: "صباح الناصر",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Ishbiliya",
+        name_ar: "اشبيلية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Andalus",
+        name_ar: "الأندلس",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Omariya",
+        name_ar: "العمرية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Rabiya",
+        name_ar: "الرابية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Ahmadi",
+        name_ar: "الأحمدي",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Mangaf",
+        name_ar: "المنقف",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Fahaheel",
+        name_ar: "الفحيحيل",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Mahboula",
+        name_ar: "المهبولة",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Fintas",
+        name_ar: "الفنطاس",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Abu Halifa",
+        name_ar: "أبو حليفة",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Riqqa",
+        name_ar: "الرقة",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Sabahiya",
+        name_ar: "الصباحية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Sabah Al-Ahmad",
+        name_ar: "صباح الأحمد",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Wafra",
+        name_ar: "الوفرة",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Khairan",
+        name_ar: "الخيران",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Ali Sabah Al-Salem",
+        name_ar: "علي صباح السالم",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Jahra",
+        name_ar: "الجهراء",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Naeem",
+        name_ar: "النعيم",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Qasr",
+        name_ar: "القصر",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Saad Al-Abdullah",
+        name_ar: "سعد العبدالله",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Sulaibiya",
+        name_ar: "الصليبية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Amghara",
+        name_ar: "أمغرة",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Abdali",
+        name_ar: "العبدلي",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Mubarak Al-Kabeer",
+        name_ar: "مبارك الكبير",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Qurain",
+        name_ar: "القرين",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Adan",
+        name_ar: "العدان",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Qusour",
+        name_ar: "القصور",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Sabah Al-Salem",
+        name_ar: "صباح السالم",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Messila",
+        name_ar: "المسيلة",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Abu Fatira",
+        name_ar: "أبو فطيرة",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Funaitees",
+        name_ar: "الفنيطيس",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name_en: "Abu Al-Hasaniya",
+        name_ar: "أبو الحصانية",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+
+    await queryInterface.bulkInsert("Cities", cities_arr);
+  },
+
+  async down(queryInterface, Sequelize) {
+    /**
+     * Add commands to revert seed here.
+     *
+     * Example:
+     * await queryInterface.bulkDelete('People', null, {});
+     */
+  },
+};

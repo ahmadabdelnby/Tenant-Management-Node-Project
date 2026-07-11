@@ -42,8 +42,9 @@ cp .env.example .env
 
 3. Set up the database:
 ```bash
-# In MySQL Workbench or CLI, run:
-# src/database/migrations/full_setup.sql
+# 1- npx sequelize db:create
+# 2- npx sequelize db:migrate
+# 3- npx sequelizr db:seed-all
 ```
 
 4. Start the server:

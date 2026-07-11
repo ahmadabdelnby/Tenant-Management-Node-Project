@@ -20,7 +20,7 @@ const notificationService = {
       isRead: notification.is_read === 1 || notification.is_read === true,
       link: notification.link,
       metadata: notification.metadata ? (typeof notification.metadata === 'string' ? JSON.parse(notification.metadata) : notification.metadata) : null,
-      createdAt: notification.created_at,
+      createdAt: notification.createdAt,
     };
   },
 

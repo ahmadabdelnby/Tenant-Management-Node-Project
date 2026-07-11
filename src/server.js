@@ -1,6 +1,6 @@
 const app = require('./app');
 const config = require('./config');
-const { testConnection, sequelize } = require('./models');
+const { testConnection, sequelize } = require('../models');
 const { ensureTenancyContractFields } = require('./migrations/add-contract-fields-to-tenancies');
 const logger = require('./shared/utils/logger');
 
@@ -10,10 +10,10 @@ const logger = require('./shared/utils/logger');
 
 const startServer = async () => {
   try {
-    await ensureTenancyContractFields(sequelize.getQueryInterface());
+    // await ensureTenancyContractFields(sequelize.getQueryInterface());
 
-    // Test database connection
-    await testConnection();
+    // // Test database connection
+    // await testConnection();
     
     // Start Express server
     const server = app.listen(config.port, () => {

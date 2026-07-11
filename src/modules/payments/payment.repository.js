@@ -1,4 +1,4 @@
-const { Payment, Tenancy, Unit, Building, User, sequelize } = require('../../models');
+const { Payment, Tenancy, Unit, Building, User, sequelize } = require('../../../models');
 const { Op, literal } = require('sequelize');
 
 const FULL_INCLUDE = [

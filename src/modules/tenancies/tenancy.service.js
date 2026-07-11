@@ -63,8 +63,8 @@ const tenancyService = {
         lastName: tenancy.tenant_last_name,
         phone: tenancy.tenant_phone,
       },
-      createdAt: tenancy.created_at,
-      updatedAt: tenancy.updated_at,
+      createdAt: tenancy.createdAt,
+      updatedAt: tenancy.updatedAt,
     };
   },
   
@@ -299,8 +299,8 @@ const tenancyService = {
         lastName: t.tenant_last_name,
         phone: t.tenant_phone,
       },
-      createdAt: t.created_at,
-      updatedAt: t.updated_at,
+      createdAt: t.createdAt,
+      updatedAt: t.updatedAt,
     }));
   },
 };

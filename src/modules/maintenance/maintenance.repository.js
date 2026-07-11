@@ -1,4 +1,4 @@
-const { MaintenanceRequest, Unit, Building, User, Tenancy } = require('../../models');
+const { MaintenanceRequest, Unit, Building, User, Tenancy } = require('../../../models');
 const { Op } = require('sequelize');
 
 const FIND_INCLUDE = [
@@ -103,7 +103,7 @@ const maintenanceRepository = {
         unitInclude,
         { model: User, as: 'tenant', attributes: ['email', 'first_name', 'last_name'] },
       ],
-      order: [['created_at', 'DESC']],
+      order: [['createdAt', 'DESC']],
     };
     if (limit) {
       queryOptions.limit = parseInt(limit, 10);
@@ -297,10 +297,10 @@ const maintenanceRepository = {
     if (filters.ownerId) buildingWhere.owner_id = filters.ownerId;
 
     if (filters.dateFrom) {
-      where.created_at = { ...(where.created_at || {}), [Op.gte]: filters.dateFrom };
+      where.createdAt = { ...(where.createdAt || {}), [Op.gte]: filters.dateFrom };
     }
     if (filters.dateTo) {
-      where.created_at = { ...(where.created_at || {}), [Op.lte]: filters.dateTo };
+      where.createdAt = { ...(where.createdAt || {}), [Op.lte]: filters.dateTo };
     }
 
     const unitInclude = {
@@ -328,7 +328,7 @@ const maintenanceRepository = {
         {
           model: User,
           as: 'tenant',
-          attributes: ['email', 'first_name', 'last_name', 'phone'],
+          attributes: ['email', 'first_name', 'last_name'],
         },
         {
           model: User,
@@ -339,7 +339,7 @@ const maintenanceRepository = {
       order: [
         [{ model: Unit, as: 'unit' }, { model: Building, as: 'building' }, 'name_en', 'ASC'],
         [{ model: Unit, as: 'unit' }, 'unit_number', 'ASC'],
-        ['created_at', 'DESC'],
+        ['createdAt', 'DESC'],
       ],
     });
 

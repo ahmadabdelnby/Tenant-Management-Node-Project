@@ -1,4 +1,4 @@
-const { Building, User, Unit, City } = require('../../models');
+const { Building, User, Unit, City } = require('../../../models');
 const { Op, fn, col, literal } = require('sequelize');
 
 const OWNER_INCLUDE = {
@@ -76,7 +76,7 @@ const buildingRepository = {
           [literal('(SELECT COUNT(*) FROM units WHERE units.building_id = Building.id AND units.deleted_at IS NULL)'), 'total_units'],
         ],
       },
-      order: [['created_at', 'DESC']],
+      order: [['createdAt', 'DESC']],
       subQuery: false,
     };
     if (limit) {
@@ -200,7 +200,7 @@ const buildingRepository = {
   async findByOwnerId(ownerId) {
     const rows = await Building.findAll({
       where: { owner_id: ownerId },
-      order: [['created_at', 'DESC']],
+      order: [['createdAt', 'DESC']],
     });
     return rows.map(r => r.get({ plain: true }));
   },

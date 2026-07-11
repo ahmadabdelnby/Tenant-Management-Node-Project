@@ -1,0 +1,58 @@
+"use strict";
+
+module.exports = (sequelize, DataTypes) => {
+  const PaymentLink = sequelize.define(
+    "PaymentLink",
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      order_no: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        unique: true,
+      },
+      cust_name: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+      },
+      amount: {
+        type: DataTypes.DECIMAL(10, 3),
+        allowNull: false,
+      },
+      payment_url: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      status: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        defaultValue: "Pending",
+      },
+      created_by: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      tenant_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      unit_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      building_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+    },
+    {
+      timestamps: true,
+      paranoid: true,
+    },
+  );
+PaymentLink.associate = function (models) {};
+  return PaymentLink;
+};

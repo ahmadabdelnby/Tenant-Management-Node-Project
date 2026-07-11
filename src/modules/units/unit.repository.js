@@ -1,4 +1,4 @@
-const { Unit, Building, Tenancy } = require('../../models');
+const { Unit, Building, Tenancy } = require('../../../models');
 const { Op } = require('sequelize');
 const { UNIT_STATUS } = require('../../shared/constants');
 
@@ -66,7 +66,7 @@ const unitRepository = {
         where: Object.keys(buildingWhere).length ? buildingWhere : undefined,
         required: Object.keys(buildingWhere).length > 0,
       }],
-      order: [['created_at', 'DESC']],
+      order: [['createdAt', 'DESC']],
     };
     if (limit) {
       queryOptions.limit = parseInt(limit);

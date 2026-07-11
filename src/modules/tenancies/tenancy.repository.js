@@ -1,4 +1,4 @@
-const { Tenancy, Unit, Building, User } = require('../../models');
+const { Tenancy, Unit, Building, User } = require('../../../models');
 const { Op } = require('sequelize');
 
 const FULL_INCLUDE = [
@@ -115,7 +115,7 @@ const tenancyRepository = {
         unitInclude,
         { model: User, as: 'tenant', attributes: ['email', 'first_name', 'last_name', 'phone'] },
       ],
-      order: [['created_at', 'DESC']],
+      order: [['createdAt', 'DESC']],
     };
     if (limit) {
       queryOptions.limit = parseInt(limit);
@@ -285,7 +285,7 @@ const tenancyRepository = {
           attributes: ['name_en', 'name_ar'],
         }],
       }],
-      order: [['created_at', 'DESC']],
+      order: [['createdAt', 'DESC']],
     });
 
     return rows.map(t => {

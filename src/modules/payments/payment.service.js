@@ -42,8 +42,8 @@ const paymentService = {
         lastName: payment.tenant_last_name,
         phone: payment.tenant_phone,
       },
-      createdAt: payment.created_at,
-      updatedAt: payment.updated_at,
+      createdAt: payment.createdAt,
+      updatedAt: payment.updatedAt,
     };
   },
 
@@ -261,7 +261,7 @@ const paymentService = {
     
     // Try to find by hash
     if (parsed.hash) {
-      const { Payment } = require('../../models');
+      const { Payment } = require('../../../models');
       const payment = await Payment.findOne({
         where: { tahseeel_hash: parsed.hash },
         attributes: ['id'],
@@ -303,7 +303,7 @@ const paymentService = {
   async getBuildingPaymentSummary(buildingId, month, year, user) {
     // Check access for owners
     if (user.role === ROLES.OWNER) {
-      const { Building } = require('../../models');
+      const { Building } = require('../../../models');
       const building = await Building.findByPk(buildingId, {
         attributes: ['owner_id'],
       });

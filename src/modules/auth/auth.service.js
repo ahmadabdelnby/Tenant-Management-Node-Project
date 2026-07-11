@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
-const { User, TokenBlacklist } = require('../../models');
+const { User, TokenBlacklist } = require('../../../models');
 const config = require('../../config');
 const { AppError } = require('../../shared/errors');
 const { HTTP_STATUS, ERROR_MESSAGES } = require('../../shared/constants');
@@ -21,7 +21,7 @@ const authService = {
     // Find user by email
     const user = await User.findOne({
       where: { email: email.toLowerCase() },
-      attributes: ['id', 'email', 'password_hash', 'first_name', 'last_name', 'phone', 'role', 'is_active'],
+      attributes: ['id', 'email', 'password_hash', 'first_name', 'last_name', 'role', 'is_active'],
     });
     
     if (!user) {
@@ -62,7 +62,7 @@ const authService = {
         email: user.email,
         firstName: user.first_name,
         lastName: user.last_name,
-        phone: user.phone,
+        // phone: user.phone,
         role: user.role,
       },
       token,
@@ -96,7 +96,7 @@ const authService = {
    */
   async getCurrentUser(userId) {
     const user = await User.findByPk(userId, {
-      attributes: ['id', 'email', 'first_name', 'last_name', 'phone', 'role', 'is_active', 'created_at', 'updated_at'],
+      attributes: ['id', 'email', 'first_name', 'last_name', 'role', 'is_active', 'createdAt', 'updatedAt'],
     });
     
     if (!user) {
@@ -108,11 +108,11 @@ const authService = {
       email: user.email,
       firstName: user.first_name,
       lastName: user.last_name,
-      phone: user.phone,
+      // phone: user.phone,
       role: user.role,
       isActive: user.is_active,
-      createdAt: user.created_at,
-      updatedAt: user.updated_at,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
   },
 };

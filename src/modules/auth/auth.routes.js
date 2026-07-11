@@ -9,7 +9,9 @@ const { authenticate, validate } = require('../../middleware');
  * @desc    Login user
  * @access  Public
  */
-router.post('/login', validate(loginSchema), authController.login);
+router.post('/login', 
+    //validate(loginSchema), 
+    authController.login);
 
 /**
  * @route   POST /api/auth/logout

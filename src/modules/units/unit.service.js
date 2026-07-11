@@ -36,8 +36,8 @@ const unitService = {
         street: unit.building_street || null,
         buildingNumber: unit.building_number || null,
       },
-      createdAt: unit.created_at,
-      updatedAt: unit.updated_at,
+      createdAt: unit.createdAt,
+      updatedAt: unit.updatedAt,
     };
   },
   
@@ -190,8 +190,8 @@ const unitService = {
         street: u.building_street || null,
         buildingNumber: u.building_number || null,
       },
-      createdAt: u.created_at,
-      updatedAt: u.updated_at,
+      createdAt: u.createdAt,
+      updatedAt: u.updatedAt,
     }));
   },
 };

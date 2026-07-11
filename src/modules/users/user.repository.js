@@ -1,7 +1,7 @@
-const { User } = require('../../models');
+const { User } = require('../../../models');
 const { Op } = require('sequelize');
 
-const USER_ATTRIBUTES = ['id', 'email', 'first_name', 'last_name', 'phone', 'role', 'is_active', 'created_at', 'updated_at'];
+const USER_ATTRIBUTES = ['id', 'email', 'first_name', 'last_name', 'phone', 'role', 'is_active', 'createdAt', 'updatedAt'];
 
 /**
  * User Repository - Database operations (Sequelize)
@@ -50,7 +50,7 @@ const userRepository = {
     const queryOptions = {
       where,
       attributes: USER_ATTRIBUTES,
-      order: [['created_at', 'DESC']],
+      order: [['createdAt', 'DESC']],
     };
     if (limit) {
       queryOptions.limit = parseInt(limit);

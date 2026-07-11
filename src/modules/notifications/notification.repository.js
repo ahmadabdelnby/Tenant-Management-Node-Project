@@ -1,4 +1,4 @@
-const { Notification } = require('../../models');
+const { Notification } = require('../../../models');
 const { Op } = require('sequelize');
 
 /**
@@ -19,7 +19,7 @@ const notificationRepository = {
   async findByUserId(userId, limit = 20, offset = 0) {
     const rows = await Notification.findAll({
       where: { user_id: userId },
-      order: [['created_at', 'DESC']],
+      order: [['createdAt', 'DESC']],
       limit: parseInt(limit),
       offset: parseInt(offset),
     });
@@ -93,7 +93,7 @@ const notificationRepository = {
     cutoff.setDate(cutoff.getDate() - days);
 
     const affectedCount = await Notification.destroy({
-      where: { created_at: { [Op.lt]: cutoff } },
+      where: { createdAt: { [Op.lt]: cutoff } },
     });
     return affectedCount;
   },
